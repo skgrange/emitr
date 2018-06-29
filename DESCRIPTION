@@ -1,0 +1,26 @@
+Package: emitr
+Type: Package
+Title: Tools to Help With On-Road Vehicle Emission Data Analysis
+Version: 0.0.01
+Date: 2018-06-29
+Authors@R: person("Stuart", "Grange", email = "s.k.grange@gmail.com", 
+    role = c("cre", "aut"))
+Maintainer: Stuart K. Grange <s.k.grange@gmail.com>
+Description: A toolset to analyse on-road emission data. 
+URL: https://github.com/skgrange/emitr
+License: GPL-3 | file LICENSE
+ByteCompile: true
+Depends:
+    R (>= 3.2.0)
+Imports:
+    dplyr,
+    lubridate,
+    stringr,
+    tidyr,
+    magrittr
+Suggests:
+    databaser,
+    threadr
+LazyLoad: yes
+LazyData: true
+RoxygenNote: 6.0.1
