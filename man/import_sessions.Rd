@@ -7,7 +7,7 @@
 import_sessions(con)
 }
 \arguments{
-\item{con}{}
+\item{con}{Database connection to a vehicle emissions database.}
 }
 \value{
 Data frame.

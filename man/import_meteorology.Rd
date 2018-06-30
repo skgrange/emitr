@@ -7,11 +7,13 @@
 import_meteorology(con, site = NA, spread = TRUE, verbose = FALSE)
 }
 \arguments{
-\item{con}{}
+\item{con}{Database connection to a vehicle emissions database.}
 
-\item{spread}{}
+\item{site}{A vector of sites.}
 
-\item{verbose}{}
+\item{spread}{Should the table be reshaped and made wider?}
+
+\item{verbose}{Should the function give messages?}
 }
 \value{
 Data frame.

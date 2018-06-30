@@ -7,11 +7,12 @@
 import_vehicle_emissions(con, registration = NA, verbose = FALSE)
 }
 \arguments{
-\item{con}{}
+\item{con}{Database connection to a vehicle emissions database.}
 
-\item{registration}{}
+\item{registration}{A vector of registrations to return. If not used, all
+registrations will be selected.}
 
-\item{verbose}{}
+\item{verbose}{Should the function give messages?}
 }
 \value{
 Data frame.

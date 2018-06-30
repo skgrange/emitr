@@ -8,13 +8,14 @@ import_vehicle_details(con, registration = NA, spread = TRUE,
   verbose = FALSE)
 }
 \arguments{
-\item{con}{}
+\item{con}{Database connection to a vehicle emissions database.}
 
-\item{registration}{}
+\item{registration}{A vector of registrations to return. If not used, all
+registrations will be selected.}
 
-\item{spread}{}
+\item{spread}{Should the table be reshaped and made wider?}
 
-\item{verbose}{}
+\item{verbose}{Should the function give messages?}
 }
 \value{
 Data frame.

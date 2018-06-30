@@ -7,9 +7,9 @@
 sample_registrations(con, n = 1)
 }
 \arguments{
-\item{con}{}
+\item{con}{Database connection to a vehicle emissions database.}
 
-\item{n}{}
+\item{n}{Number of registrations to return.}
 }
 \value{
 Character vector.

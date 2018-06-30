@@ -2,13 +2,14 @@
 #' 
 #' @author Stuart K. Grange
 #' 
-#' @param con 
+#' @param con Database connection to a vehicle emissions database. 
 #' 
-#' @param registration
+#' @param registration A vector of registrations to return. If not used, all
+#' registrations will be selected. 
 #' 
-#' @param spread
+#' @param spread Should the table be reshaped and made wider? 
 #' 
-#' @param verbose
+#' @param verbose Should the function give messages? 
 #' 
 #' @return Data frame. 
 #' 
@@ -19,7 +20,8 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
   if (is.na(registration[1])) {
     
     sql_select <- stringr::str_c(
-      "SELECT registration,
+      "SELECT data_source, 
+      registration,
       variable, 
       value 
       FROM vehicle_details"
@@ -31,7 +33,8 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
     registration <- make_sql_registration(registration)
     
     sql_select <- stringr::str_c(
-      "SELECT registration,
+      "SELECT data_source, 
+      registration,
       variable, 
       value 
       FROM vehicle_details 
@@ -72,15 +75,16 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
       
       # Arrange some variables
       df <- df %>% 
-        select(registration, 
-               dplyr::matches("make"),
+        select(data_source,
+               registration, 
+               dplyr::matches("\\bmake\\b"),
                dplyr::matches("model"),
                dplyr::starts_with("model_variant"),
                dplyr::matches("body"),
+               dplyr::matches("fuel_type"),
                dplyr::matches("vehicle_series"),
                dplyr::matches("vehicle_desc"),
                dplyr::matches("cc"),
-               dplyr::matches("fuel_type"),
                dplyr::matches("fuel_delivery"),
                everything())
       
@@ -138,15 +142,17 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
 #' 
 #' @author Stuart K. Grange
 #' 
-#' @param con 
+#' @param con Database connection to a vehicle emissions database. 
 #' 
-#' @param registration
+#' @param registration A vector of registrations to return. If not used, all
+#' registrations will be selected. 
 #' 
-#' @param site
+#' @param site A vector of sites to return. If not used, all sites will be 
+#' selected. 
 #' 
-#' @param spread
+#' @param spread Should the table be reshaped and made wider? 
 #' 
-#' @param verbose
+#' @param verbose Should the function give messages? 
 #' 
 #' @return Data frame. 
 #' 
@@ -250,7 +256,7 @@ make_sql_registration <- function(x) {
 #' 
 #' @author Stuart K. Grange
 #' 
-#' @param con 
+#' @param con Database connection to a vehicle emissions database. 
 #' 
 #' @return Data frame. 
 #' 
@@ -265,9 +271,9 @@ import_sessions <- function(con) {
     LEFT JOIN sites ON sessions.site = sites.site
     ORDER BY session"
   ) %>% 
-    mutate(day = parse_unix_time(day), 
-           date_start = parse_unix_time(date_start),
-           date_end = parse_unix_time(date_end)) %>% 
+    mutate(day = threadr::parse_unix_time(day), 
+           date_start = threadr::parse_unix_time(date_start),
+           date_end = threadr::parse_unix_time(date_end)) %>% 
     select(session,
            site,
            site_name,
@@ -281,7 +287,7 @@ import_sessions <- function(con) {
 #' 
 #' @author Stuart K. Grange
 #' 
-#' @param con 
+#' @param con Database connection to a vehicle emissions database. 
 #' 
 #' @return Data frame. 
 #' 
@@ -303,11 +309,13 @@ import_sites <- function(con) {
 #' 
 #' @author Stuart K. Grange
 #' 
-#' @param con 
+#' @param con Database connection to a vehicle emissions database. 
 #' 
-#' @param spread 
+#' @param site A vector of sites. 
 #' 
-#' @param verbose 
+#' @param spread Should the table be reshaped and made wider? 
+#' 
+#' @param verbose Should the function give messages? 
 #' 
 #' @return Data frame. 
 #' 
@@ -339,8 +347,8 @@ import_meteorology <- function(con, site = NA, spread = TRUE, verbose = FALSE) {
   
   # Query
   df <- databaser::db_get(con, sql_select) %>% 
-    mutate(date = parse_unix_time(date), 
-           date_end = parse_unix_time(date_end))
+    mutate(date = threadr::parse_unix_time(date), 
+           date_end = threadr::parse_unix_time(date_end))
   
   # Reshape
   if (spread) {
@@ -361,9 +369,9 @@ import_meteorology <- function(con, site = NA, spread = TRUE, verbose = FALSE) {
 #' 
 #' @author Stuart K. Grange
 #' 
-#' @param con 
+#' @param con Database connection to a vehicle emissions database. 
 #' 
-#' @param n
+#' @param n Number of registrations to return. 
 #' 
 #' @return Character vector. 
 #' 
@@ -393,11 +401,12 @@ sample_registrations <- function(con, n = 1) {
 #' 
 #' @author Stuart K. Grange
 #' 
-#' @param con 
+#' @param con Database connection to a vehicle emissions database. 
 #' 
-#' @param registration
+#' @param registration A vector of registrations to return. If not used, all
+#' registrations will be selected. 
 #' 
-#' @param verbose
+#' @param verbose Should the function give messages? 
 #' 
 #' @return Data frame. 
 #' 
@@ -450,5 +459,55 @@ import_vehicle_emissions <- function(con, registration = NA, verbose = FALSE) {
   }
   
   return(df)
+  
+}
+
+
+#' Function to return all vehicle makes from a vehicle emissions database. 
+#' 
+#' @author Stuart K. Grange
+#' 
+#' @param con Database connection to a vehicle emissions database. 
+#' 
+#' @return Character vector. 
+#' 
+#' @export
+get_all_vehicle_makes <- function(con) {
+  
+  databaser::db_get(
+    con, 
+    "SELECT DISTINCT value
+    FROM vehicle_details
+    WHERE variable = 'make'
+    ORDER BY value"
+  )[, ]
+  
+}
+
+
+#' Function to import all distinct registrations from a vehicle emissions 
+#' database. 
+#' 
+#' @author Stuart K. Grange
+#' 
+#' @param con Database connection to a vehicle emissions database. 
+#' 
+#' @return Data frame.  
+#' 
+#' @export
+import_distinct_registrations <- function(con) {
+  
+  databaser::db_get(
+    con, 
+    "SELECT DISTINCT 'vehicle_details' AS `table`, 
+    registration
+    FROM vehicle_details
+    UNION 
+    SELECT DISTINCT 'vehicle_captures' AS `table`, 
+    registration
+    FROM vehicle_captures
+    ORDER BY `table`, 
+    registration"
+  )
   
 }
