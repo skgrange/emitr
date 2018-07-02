@@ -75,16 +75,28 @@ insert_vehicle_details <- function(con, df, verbose = FALSE) {
   
   if (verbose) message(threadr::str_date_formatted(), ": Checking input...")
   
-  # Check
-  if (anyNA(df)) stop("Missing data are not allowed...", call. = FALSE)
-  if (any(df == "")) stop("Empty strings are not allowed...", call. = FALSE)
+  # Check input
+  if (anyNA(df[, !(names(df) == "vin")])) 
+    stop("Missing data are not allowed...", call. = FALSE)
+  
+  # na.rm for vin variable
+  if (any(df == "", na.rm = TRUE)) 
+    stop("Empty strings are not allowed...", call. = FALSE)
+  
+  # Get data source
+  data_source <- unique(df$data_source)
+  
+  if (length(data_source) != 1) 
+    stop("Only one data source is allowed...", call. = FALSE)
   
   # Check registrations
-  registrations_db <- databaser::db_get(
-    con, 
+  sql_select <- stringr::str_c(
     "SELECT DISTINCT registration 
-    FROM vehicle_details"
-  )[,]
+    FROM vehicle_details
+    WHERE data_source = ", data_source
+  )
+  
+  registrations_db <- databaser::db_get(con, sql_select)[,]
   
   if (any(unique(df$registration) %in% registrations_db)) 
     stop("`registrations` are already in database...", call. = FALSE)
@@ -166,7 +178,7 @@ allowed_vehicle_details_variables <- function() {
     "type_approval_category", "unladen_weight", "urban_cold_lkm", 
     "urban_cold_mpg", "valve_count", "valve_gear", "vehicle_description", 
     "vehicle_gross_weight", "vehicle_height", "vehicle_length", "vehicle_origin", 
-    "vehicle_series", "vehicle_width", "vin", "visibility_date", 
+    "vehicle_series", "vehicle_width", "visibility_date", 
     "wheelbase_length", "wheelplan", "engine_number", "noise_drive_by", 
     "noise_engine", "noise_stationary", "power_to_weight", 
     "smmt_market_sector_line", "trailer_braked")

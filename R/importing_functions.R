@@ -21,6 +21,7 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
     
     sql_select <- stringr::str_c(
       "SELECT data_source, 
+      vin,
       registration,
       variable, 
       value 
@@ -34,6 +35,7 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
     
     sql_select <- stringr::str_c(
       "SELECT data_source, 
+      vin,
       registration,
       variable, 
       value 
@@ -77,6 +79,7 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
       df <- df %>% 
         select(data_source,
                registration, 
+               vin,
                dplyr::matches("\\bmake\\b"),
                dplyr::matches("model"),
                dplyr::starts_with("model_variant"),
@@ -89,6 +92,11 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
                everything())
       
       # # Correct some data types
+      # if ("vehicle_series" %in% names(df)) 
+      #   df$vehicle_series <- as.character(df$vehicle_series)
+      # 
+      # if ("model" %in% names(df)) df$model <- as.character(df$model)
+      
       # if ("setup_date" %in% names(df)) {
       #   
       #   df$setup_date <- lubridate::parse_date_time(
@@ -163,7 +171,9 @@ import_vehicle_captures <- function(con, registration = NA, site = NA,
   sql_select <- stringr::str_c(
     "SELECT vehicle_captures.*,
     sessions.site,
-    sites.site_name
+    sites.site_name,
+    sessions.instrument,
+    sessions.vehicle_details_data_source AS data_source
     FROM vehicle_captures
     LEFT JOIN sessions
     ON vehicle_captures.session = sessions.session
@@ -229,6 +239,8 @@ import_vehicle_captures <- function(con, registration = NA, site = NA,
     select(site,
            site_name,
            session,
+           instrument,
+           data_source,
            date,
            everything()) %>% 
     arrange(site, 
@@ -373,10 +385,12 @@ import_meteorology <- function(con, site = NA, spread = TRUE, verbose = FALSE) {
 #' 
 #' @param n Number of registrations to return. 
 #' 
+#' @param sort Should the vector be sorted in alphabetical order? 
+#' 
 #' @return Character vector. 
 #' 
 #' @export
-sample_registrations <- function(con, n = 1) {
+sample_registrations <- function(con, n = 1, sort = FALSE) {
   
   # to-do: table logic?
   
@@ -391,6 +405,9 @@ sample_registrations <- function(con, n = 1) {
   
   # Query
   x <- databaser::db_get(con, sql_select)[, 1]
+  
+  # Alphabetical sort
+  if (sort) x <- sort(x)
   
   return(x)
   
@@ -434,16 +451,19 @@ import_vehicle_emissions <- function(con, registration = NA, verbose = FALSE) {
   
   # Join
   if (verbose) message(threadr::str_date_formatted(), ": Joining data...")
-  df <- left_join(df_captures, df_details, by = "registration")
+  df <- left_join(df_captures, df_details, by = c("registration", "data_source"))
   
   if (nrow(df) != 0) {
     
     # Order variables
     df <- df %>% 
-      select(site,
+      select(session,
+             instrument,
+             data_source,
+             site,
              site_name,
-             session,
              date,
+             vin,
              registration,
              make,
              model,

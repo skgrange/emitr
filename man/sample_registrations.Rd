@@ -4,12 +4,14 @@
 \alias{sample_registrations}
 \title{Function to return random registrations from a vehicle emissions database.}
 \usage{
-sample_registrations(con, n = 1)
+sample_registrations(con, n = 1, sort = FALSE)
 }
 \arguments{
 \item{con}{Database connection to a vehicle emissions database.}
 
 \item{n}{Number of registrations to return.}
+
+\item{sort}{Should the vector be sorted in alphabetical order?}
 }
 \value{
 Character vector.

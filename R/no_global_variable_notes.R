@@ -6,7 +6,7 @@ if (getRversion() >= "2.15.1") {
   variables <- c(
     ".", "date_end", "variable", "value", "day", "date_start", "session", "site",
     "site_name", "instrument", "make", "model", "validity", "data_source", 
-    "model_variant_name"
+    "model_variant_name", "vin"
   )
   
   # Squash the note
