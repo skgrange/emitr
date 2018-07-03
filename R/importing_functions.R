@@ -21,7 +21,6 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
     
     sql_select <- stringr::str_c(
       "SELECT data_source, 
-      vin,
       registration,
       variable, 
       value 
@@ -35,7 +34,6 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
     
     sql_select <- stringr::str_c(
       "SELECT data_source, 
-      vin,
       registration,
       variable, 
       value 

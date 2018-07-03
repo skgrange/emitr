@@ -11,7 +11,7 @@ The development version:
 devtools::install_github("skgrange/threadr")
 devtools::install_github("skgrange/databaser")
 
-# Install gissr
+# Install emitr
 devtools::install_github("skgrange/emitr")
 ```
 
