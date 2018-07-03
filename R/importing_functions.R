@@ -275,22 +275,33 @@ make_sql_registration <- function(x) {
 #' @export
 import_sessions <- function(con) {
   
-  databaser::db_get(
+  df <- databaser::db_get(
     con, 
     "SELECT sessions.*,
     sites.site_name
     FROM sessions 
     LEFT JOIN sites ON sessions.site = sites.site
     ORDER BY session"
-  ) %>% 
-    mutate(day = threadr::parse_unix_time(day), 
-           date_start = threadr::parse_unix_time(date_start),
-           date_end = threadr::parse_unix_time(date_end)) %>% 
-    select(session,
-           site,
-           site_name,
-           instrument,
-           everything())
+  ) 
+  
+  if (nrow(df) != 0) {
+    
+    df <- df %>% 
+      mutate(day = threadr::parse_unix_time(day), 
+             date_start = threadr::parse_unix_time(date_start),
+             date_end = threadr::parse_unix_time(date_end)) %>% 
+      select(session,
+             site,
+             site_name,
+             instrument,
+             everything())
+    
+  } else {
+    warning("`sessions` contains no data...", call. = FALSE)
+    
+  } 
+  
+  return(df)
   
 }
 

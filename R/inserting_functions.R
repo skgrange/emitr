@@ -27,8 +27,24 @@ insert_vehicle_captures <- function(con, df, verbose = FALSE) {
   if (any(vector_test)) 
     stop("There is missing or empty data in critical variables..", call. = FALSE)
   
+  # Check session
+  sessions_db <- databaser::db_get(
+    con, 
+    "SELECT DISTINCT session 
+    FROM sessions"
+  )[, ]
+  
+  if (!all(unique(df$session) %in% sessions_db)) {
+    
+    stop(
+      "There are sessions in input not within the `sessions` table...", 
+      call. = FALSE
+    )
+    
+  }
+  
   # Check variables
-  variables_allowed <- allowed_vehicle_captures_variables() 
+  variables_allowed <- allowed_vehicle_captures_variables()
   
   # Test
   variables_not_allowed <- setdiff(unique(df$variable), variables_allowed)
@@ -89,12 +105,28 @@ insert_vehicle_details <- function(con, df, verbose = FALSE) {
   if (length(data_source) != 1) 
     stop("Only one data source is allowed...", call. = FALSE)
   
+  data_sources_db <- databaser::db_get(
+    con, 
+    "SELECT DISTINCT data_source 
+    FROM vehicle_details_data_sources"
+  )[, ]
+  
+  if (!data_source %in% data_sources_db) {
+    
+    stop(
+      "`data_source` is not in `vehicle_details_data_sources` table...", 
+      call. = FALSE
+    )
+    
+  }
+
   # Check registrations
   sql_select <- stringr::str_c(
     "SELECT DISTINCT registration 
     FROM vehicle_details
-    WHERE data_source = ", data_source
-  )
+    WHERE data_source=", data_source
+  ) %>% 
+    stringr::str_squish()
   
   registrations_db <- databaser::db_get(con, sql_select)[,]
   
@@ -181,6 +213,6 @@ allowed_vehicle_details_variables <- function() {
     "vehicle_series", "vehicle_width", "visibility_date", 
     "wheelbase_length", "wheelplan", "engine_number", "noise_drive_by", 
     "noise_engine", "noise_stationary", "power_to_weight", 
-    "smmt_market_sector_line", "trailer_braked")
+    "smmt_market_sector_line", "trailer_braked", "vin")
   
 }
