@@ -239,7 +239,7 @@ insert_sessions <- function(con, df) {
     stop("There are duplicated sessions...", call. = FALSE)
   
   # Check sites
-  if (!unique(df$site) %in% get_sites(con))
+  if (!any(unique(df$site) %in% get_sites(con)))
     stop("sites do not exist in `sites`...", call. = FALSE)
   
   databaser::db_insert(con, "sessions", df)
