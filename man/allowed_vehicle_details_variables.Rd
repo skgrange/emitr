@@ -3,7 +3,7 @@
 \name{allowed_vehicle_details_variables}
 \alias{allowed_vehicle_details_variables}
 \title{Function to return allowed variables for the \code{`vehicle_details`} table
-in an vehicle emissions database.}
+in a vehicle emissions database.}
 \usage{
 allowed_vehicle_details_variables()
 }
@@ -12,7 +12,7 @@ Character vector.
 }
 \description{
 Function to return allowed variables for the \code{`vehicle_details`} table
-in an vehicle emissions database.
+in a vehicle emissions database.
 }
 \author{
 Stuart K. Grange

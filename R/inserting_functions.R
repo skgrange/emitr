@@ -165,7 +165,7 @@ insert_vehicle_details <- function(con, df, verbose = FALSE) {
 
 
 #' Function to return allowed variables for the \code{`vehicle_captures`} table
-#' in an vehicle emissions database. 
+#' in a vehicle emissions database. 
 #' 
 #' @author Stuart K. Grange
 #' 
@@ -184,7 +184,7 @@ allowed_vehicle_captures_variables <- function() {
 
 
 #' Function to return allowed variables for the \code{`vehicle_details`} table
-#' in an vehicle emissions database. 
+#' in a vehicle emissions database. 
 #' 
 #' @author Stuart K. Grange
 #' 
@@ -214,5 +214,78 @@ allowed_vehicle_details_variables <- function() {
     "wheelbase_length", "wheelplan", "engine_number", "noise_drive_by", 
     "noise_engine", "noise_stationary", "power_to_weight", 
     "smmt_market_sector_line", "trailer_braked", "vin")
+  
+}
+
+
+#' Function to insert session data into \code{`sessions`}. 
+#' 
+#' @author Stuart K. Grange
+#' 
+#' @param con Database connection to a vehicle emissions database. 
+#' 
+#' @param df Input data frame to insert into \code{`sessions`}. 
+#' 
+#' @return Invisible, a database insert. 
+#' 
+#' @export
+insert_sessions <- function(con, df) {
+  
+  # Check session
+  if (anyDuplicated(df$session) != 0) 
+    stop("`session` is not unique....", call. = FALSE)
+  
+  if (any(df$session %in% get_sessions(con))) 
+    stop("There are duplicated sessions...", call. = FALSE)
+  
+  # Check sites
+  if (!unique(df$site) %in% get_sites(con))
+    stop("sites do not exist in `sites`...", call. = FALSE)
+  
+  databaser::db_insert(con, "sessions", df)
+  
+}
+
+
+#' Function to return session values in the \code{`sessions`} table in a vehicle
+#' emissions database. 
+#' 
+#' @param con Database connection to a vehicle emissions database. 
+#' 
+#' @author Stuart K. Grange
+#' 
+#' @return Character vector. 
+#' 
+#' @export
+get_sessions <- function(con) {
+  
+  databaser::db_get(
+    con, 
+    "SELECT DISTINCT session 
+    FROM sessions 
+    ORDER BY session"
+  )[, ]
+  
+}
+
+
+#' Function to return site values in the \code{`sites`} table in a vehicle
+#' emissions database. 
+#' 
+#' @param con Database connection to a vehicle emissions database. 
+#' 
+#' @author Stuart K. Grange
+#' 
+#' @return Character vector. 
+#' 
+#' @export
+get_sites <- function(con) {
+  
+  databaser::db_get(
+    con, 
+    "SELECT DISTINCT site 
+    FROM sites 
+    ORDER BY site"
+  )[, ]
   
 }
