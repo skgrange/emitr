@@ -1,5 +1,7 @@
 # **emitr**
 
+[![Build Status](https://travis-ci.org/skgrange/emitr.svg?branch=master)](https://travis-ci.org/skgrange/emitr)
+
 **emitr** is an R package to help organise and analyse on-road vehicle emissions data. 
 
 ## Installation
