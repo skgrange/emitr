@@ -16,5 +16,3 @@ devtools::install_github("skgrange/databaser")
 # Install emitr
 devtools::install_github("skgrange/emitr")
 ```
-
-
