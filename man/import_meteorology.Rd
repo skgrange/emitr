@@ -4,7 +4,7 @@
 \alias{import_meteorology}
 \title{Function to import meteorological data from a vehicle emissions database.}
 \usage{
-import_meteorology(con, site = NA, spread = TRUE, verbose = FALSE)
+import_meteorology(con, site = NA, spread = TRUE)
 }
 \arguments{
 \item{con}{Database connection to a vehicle emissions database.}
@@ -12,8 +12,6 @@ import_meteorology(con, site = NA, spread = TRUE, verbose = FALSE)
 \item{site}{A vector of sites.}
 
 \item{spread}{Should the table be reshaped and made wider?}
-
-\item{verbose}{Should the function give messages?}
 }
 \value{
 Data frame.

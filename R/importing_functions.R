@@ -336,12 +336,10 @@ import_sites <- function(con) {
 #' 
 #' @param spread Should the table be reshaped and made wider? 
 #' 
-#' @param verbose Should the function give messages? 
-#' 
 #' @return Data frame. 
 #' 
 #' @export
-import_meteorology <- function(con, site = NA, spread = TRUE, verbose = FALSE) {
+import_meteorology <- function(con, site = NA, spread = TRUE) {
   
   # Query
   sql_select <- stringr::str_c(
@@ -354,9 +352,15 @@ import_meteorology <- function(con, site = NA, spread = TRUE, verbose = FALSE) {
   
   if (!is.na(site[1])) {
     
+    # Parse site, registraion parser uses upper case
+    site <-  site %>% 
+      stringr::str_trim() %>% 
+      stringr::str_c("'", ., "'") %>% 
+      stringr::str_c(collapse = ",")
+    
     sql_select <- stringr::str_c(
       sql_select, 
-      " WHERE observations_meteorological.site IN (", make_sql_registration(site), ")"
+      " WHERE observations_meteorological.site IN (", site, ")"
     )
     
   } 
@@ -364,20 +368,28 @@ import_meteorology <- function(con, site = NA, spread = TRUE, verbose = FALSE) {
   # Clean
   sql_select <- stringr::str_squish(sql_select)
   
-  if (verbose) message(sql_select)
-  
   # Query
-  df <- databaser::db_get(con, sql_select) %>% 
-    mutate(date = threadr::parse_unix_time(date), 
-           date_end = threadr::parse_unix_time(date_end))
+  df <- databaser::db_get(con, sql_select)
   
-  # Reshape
-  if (spread) {
+  if (nrow(df) != 0) {
     
     df <- df %>% 
-      tidyr::spread(variable, value, convert = TRUE) %>% 
-      arrange(site,
-              date)
+      mutate(date = threadr::parse_unix_time(date), 
+             date_end = threadr::parse_unix_time(date_end))
+    
+    # Reshape
+    if (spread) {
+      
+      df <- df %>% 
+        tidyr::spread(variable, value, convert = TRUE) %>% 
+        arrange(site,
+                date)
+      
+    }
+    
+  } else {
+    
+    df <- data.frame()
     
   }
   
