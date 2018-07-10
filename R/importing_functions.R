@@ -560,22 +560,88 @@ get_all_vehicle_makes <- function(con) {
 #' 
 #' @param con Database connection to a vehicle emissions database. 
 #' 
+#' @param as.logical Should the data frame contain tests indicating if the 
+#' registraion exists or not? 
+#' 
 #' @return Data frame.  
 #' 
 #' @export
-import_distinct_registrations <- function(con) {
+import_distinct_registrations <- function(con, as.logical = FALSE) {
   
-  databaser::db_get(
+  # Escaping may specific to PostgreSQL
+  df <- databaser::db_get(
     con, 
-    "SELECT DISTINCT 'vehicle_details' AS `table`, 
+    "SELECT DISTINCT 'vehicle_details' AS \"table\", 
     registration
     FROM vehicle_details
+    WHERE registration IS NOT NULL
     UNION 
-    SELECT DISTINCT 'vehicle_captures' AS `table`, 
+    SELECT DISTINCT 'vehicle_captures' AS \"table\", 
     registration
     FROM vehicle_captures
-    ORDER BY `table`, 
-    registration"
+    WHERE registration IS NOT NULL
+    ORDER BY \"table\", registration"
   )
   
+  if (as.logical) {
+    
+    df_c <- df %>%
+      filter(table == "vehicle_captures") %>%
+      mutate(vehicle_captures = TRUE) %>%
+      select(-table)
+
+    df_d <- df %>%
+      filter(table == "vehicle_details") %>%
+      mutate(vehicle_details = TRUE) %>%
+      select(-table)
+    
+    # Back to df
+    df <- df_c %>%
+      dplyr::full_join(df_d, by= "registration") %>%
+      dplyr::mutate_if(is.logical, dplyr::funs(ifelse(is.na(.), FALSE, .))) %>% 
+      arrange(registration)
+    
+  }
+  
+  return(df)
+
 }
+
+
+#' Function to return registrations for particular vehicle makes. 
+#'
+#' @param con Database connection to a vehicle emissions database.
+#'
+#' @param make A vector of vehicle makes. 
+#' 
+#' @section \code{\link{get_all_vehicle_makes}}
+#' 
+#' @return Data frame. 
+#'  
+#' @export
+get_registrations_for_makes <- function(con, make) {
+  
+  # Format make
+  make <- stringr::str_trim(make)
+  make <- stringr::str_to_upper(make)
+  make <- stringr::str_c("'", make, "'", collapse = ", ")
+  databaser::db_wildcard_check(make)
+  
+  # Query
+  df <- databaser::db_get(
+    con, 
+    stringr::str_c(
+      "SELECT DISTINCT value AS make, 
+      data_source, 
+      registration
+      FROM vehicle_details 
+      WHERE variable = 'make' 
+      AND value IN (", make, ")
+      ORDER BY make, registration, data_source"
+    )
+  )
+  
+  return(df)
+  
+}
+

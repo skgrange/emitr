@@ -5,10 +5,13 @@
 \title{Function to import all distinct registrations from a vehicle emissions 
 database.}
 \usage{
-import_distinct_registrations(con)
+import_distinct_registrations(con, as.logical = FALSE)
 }
 \arguments{
 \item{con}{Database connection to a vehicle emissions database.}
+
+\item{as.logical}{Should the data frame contain tests indicating if the 
+registraion exists or not?}
 }
 \value{
 Data frame.
