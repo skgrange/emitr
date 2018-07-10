@@ -9,13 +9,15 @@
 #' 
 #' @param spread Should the table be reshaped and made wider? 
 #' 
+#' @param parse_dates Should date variables be parsed? 
+#' 
 #' @param verbose Should the function give messages? 
 #' 
 #' @return Data frame. 
 #' 
 #' @export
 import_vehicle_details <- function(con, registration = NA, spread = TRUE, 
-                                   verbose = FALSE) {
+                                   parse_dates = TRUE, verbose = FALSE) {
   
   if (is.na(registration[1])) {
     
@@ -89,51 +91,70 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
                dplyr::matches("fuel_delivery"),
                everything())
       
-      # # Correct some data types
-      # if ("vehicle_series" %in% names(df)) 
-      #   df$vehicle_series <- as.character(df$vehicle_series)
-      # 
-      # if ("model" %in% names(df)) df$model <- as.character(df$model)
-      
-      # if ("setup_date" %in% names(df)) {
-      #   
-      #   df$setup_date <- lubridate::parse_date_time(
-      #     df$setup_date, 
-      #     orders = c("ymd", "dmy"), 
-      #     tz = "UTC"
-      #   )
-      #   
-      # }
-      # 
-      # if ("visibility_date" %in% names(df)) {
-      #   
-      #   df$visibility_date <- lubridate::parse_date_time(
-      #     df$visibility_date, 
-      #     orders = c("ymd", "dmy"), 
-      #     tz = "UTC"
-      #   )
-      #   
-      # }
-      # 
-      # if ("manufactured_date" %in% names(df)) {
-      #   
-      #   df$manufactured_date <- lubridate::parse_date_time(
-      #     df$manufactured_date, 
-      #     orders = c("ymd", "dmy"), 
-      #     tz = "UTC"
-      #   )
-      #   
-      # }
-      # 
-      # if ("termination_date" %in% names(df)) {
-      #   
-      #   df$termination_date <- lubridate::parse_date_time(
-      #     df$termination_date, 
-      #     orders = c("ymd", "dmy"), 
-      #     tz = "UTC"
-      #   )
-      #   
-      # }
+      # Correct data types
+      if (parse_dates) {
+        
+        if ("first_reg_date" %in% names(df)) {
+          
+          df$first_reg_date <- lubridate::ymd(
+            df$first_reg_date, 
+            tz = "UTC", 
+            quiet = TRUE
+          )
+          
+        }
+        
+        if ("manufactured_date" %in% names(df)) {
+          
+          df$manufactured_date <- lubridate::ymd(
+            df$manufactured_date, 
+            tz = "UTC", 
+            quiet = TRUE
+          )
+          
+        }
+        
+        if ("registration_date" %in% names(df)) {
+          
+          df$registration_date <- lubridate::ymd(
+            df$registration_date, 
+            tz = "UTC", 
+            quiet = TRUE
+          )
+          
+        }
+        
+        if ("setup_date" %in% names(df)) {
+          
+          df$setup_date <- lubridate::ymd(
+            df$setup_date, 
+            tz = "UTC", 
+            quiet = TRUE
+          )
+          
+        }
+        
+        if ("termination_date" %in% names(df)) {
+          
+          df$termination_date <- lubridate::ymd(
+            df$termination_date, 
+            tz = "UTC", 
+            quiet = TRUE
+          )
+          
+        }
+        
+        if ("visibility_date" %in% names(df)) {
+          
+          df$visibility_date <- lubridate::ymd(
+            df$visibility_date, 
+            tz = "UTC", 
+            quiet = TRUE
+          )
+          
+        }
+        
+      }
       
     }
     
@@ -171,7 +192,8 @@ import_vehicle_captures <- function(con, registration = NA, site = NA,
     sessions.site,
     sites.site_name,
     sessions.instrument,
-    sessions.vehicle_details_data_source AS data_source
+    sessions.vehicle_details_data_source AS data_source,
+    sessions.site_met
     FROM vehicle_captures
     LEFT JOIN sessions
     ON vehicle_captures.session = sessions.session
@@ -239,6 +261,7 @@ import_vehicle_captures <- function(con, registration = NA, site = NA,
            session,
            instrument,
            data_source,
+           site_met,
            date,
            everything()) %>% 
     arrange(site, 
@@ -276,7 +299,8 @@ import_sessions <- function(con) {
   df <- databaser::db_get(
     con, 
     "SELECT sessions.*,
-    sites.site_name
+    sites.site_name,
+    sites.region
     FROM sessions 
     LEFT JOIN sites ON sessions.site = sites.site
     ORDER BY session"
@@ -291,10 +315,12 @@ import_sessions <- function(con) {
       select(session,
              site,
              site_name,
+             region,
              instrument,
              everything())
     
   } else {
+    
     warning("`sessions` contains no data...", call. = FALSE)
     
   } 
@@ -483,6 +509,7 @@ import_vehicle_emissions <- function(con, registration = NA, verbose = FALSE) {
              data_source,
              site,
              site_name,
+             site_met,
              date,
              registration,
              vin,

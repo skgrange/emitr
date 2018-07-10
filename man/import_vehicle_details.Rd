@@ -5,7 +5,7 @@
 \title{Function to import vehicle detail data from a vehicle emissions database.}
 \usage{
 import_vehicle_details(con, registration = NA, spread = TRUE,
-  verbose = FALSE)
+  parse_dates = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{con}{Database connection to a vehicle emissions database.}
@@ -14,6 +14,8 @@ import_vehicle_details(con, registration = NA, spread = TRUE,
 registrations will be selected.}
 
 \item{spread}{Should the table be reshaped and made wider?}
+
+\item{parse_dates}{Should date variables be parsed?}
 
 \item{verbose}{Should the function give messages?}
 }
