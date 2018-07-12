@@ -16,3 +16,7 @@ devtools::install_github("skgrange/databaser")
 # Install emitr
 devtools::install_github("skgrange/emitr")
 ```
+
+## Database schema
+
+![Vehicle emissions database entity relationship diagram](docs/emitr_schema.png)

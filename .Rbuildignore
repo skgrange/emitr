@@ -1,2 +1,6 @@
-## Ignore travis config file
+# Ignore travis config file
 ^\.travis\.yml$
+
+# 
+^docs$
+
