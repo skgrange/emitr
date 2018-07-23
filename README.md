@@ -20,3 +20,9 @@ devtools::install_github("skgrange/emitr")
 ## Database schema
 
 ![Vehicle emissions database entity relationship diagram](docs/emitr_schema.png)
+
+## Usage
+
+**emitr** was primarily developed so data from a number of field campaigns could be integrated into a single database and interacted with in a consistent way. This represents a significant challenge because the units used, naming conventions, and what variables are used during a vehicle capture and what details are retrieved using a registration plate based data service can be diverse. However, when complete, the importing functions: `import_vehicle_captures` and `import_vehicle_details` makes it very easy to retrieve standardised data. There is also a higher level function `import_vehicle_emissions` which will join the capture and details data together to make a table ready for analysis. 
+
+This package has been developed with [SQLite](https://www.sqlite.org/index.html) and [PostgreSQL](https://www.postgresql.org/) databases. 

@@ -193,6 +193,7 @@ import_vehicle_captures <- function(con, registration = NA, site = NA,
     sites.site_name,
     sessions.instrument,
     sessions.vehicle_details_data_source AS data_source,
+    sessions.field_campaign,
     sessions.site_met
     FROM vehicle_captures
     LEFT JOIN sessions
@@ -261,6 +262,7 @@ import_vehicle_captures <- function(con, registration = NA, site = NA,
            session,
            instrument,
            data_source,
+           field_campaign,
            site_met,
            date,
            everything()) %>% 
@@ -511,6 +513,7 @@ import_vehicle_emissions <- function(con, registration = NA, verbose = FALSE) {
       select(session,
              instrument,
              data_source,
+             field_campaign,
              site,
              site_name,
              site_met,
