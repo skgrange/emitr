@@ -300,11 +300,15 @@ import_sessions <- function(con) {
     con, 
     "SELECT sessions.*,
     sites.site_name,
-    sites.region
+    sites.region,
+    field_campaigns.field_campaign_name
     FROM sessions 
-    LEFT JOIN sites ON sessions.site = sites.site
+    LEFT JOIN sites
+    ON sessions.site = sites.site
+    LEFT JOIN field_campaigns 
+    ON sessions.field_campaign = field_campaigns.field_campaign
     ORDER BY session"
-  ) 
+  )
   
   if (nrow(df) != 0) {
     
