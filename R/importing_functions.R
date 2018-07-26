@@ -652,3 +652,51 @@ get_registrations_for_makes <- function(con, make) {
   
 }
 
+
+#' Function to import vehicle odometer data from a vehicle emissions database. 
+#' 
+#' @author Stuart K. Grange
+#'
+#' @param con Database connection to a vehicle emissions database.
+#'
+#' @param registration A vector of vehicle registrations to filter return to.
+#' 
+#' @return Data frame. 
+#'  
+#' @export
+import_vehicle_odometers <- function(con, registration = NA) {
+  
+  # Select statement
+  sql_select <- "SELECT * FROM vehicle_odometers ORDER BY data_source, registration"
+  
+  # Add where clause if needed
+  if (!is.na(registration[1])) {
+    
+    # Parse registration
+    registration <- make_sql_registration(registration)
+    
+    # Build clause
+    sql_where <- stringr::str_c(
+      "WHERE registration IN (", registration, ")"
+    )
+    
+    # Add to select statement
+    sql_select <- stringr::str_replace(
+      sql_select, 
+      "vehicle_odometers", 
+      stringr::str_c("vehicle_odometers ", sql_where)
+    )
+    
+  }
+  
+  # Query database
+  databaser::db_wildcard_check(registration)
+  df <- databaser::db_get(con, sql_select)
+  
+  # Parse dates
+  if (nrow(df) != 0)
+    df <- mutate(df, date = threadr::parse_unix_time(date))
+  
+  return(df)
+  
+}
