@@ -1,8 +1,8 @@
 Package: emitr
 Type: Package
 Title: Tools to Help With On-Road Vehicle Emission Data Analysis
-Version: 0.0.104
-Date: 2018-07-26
+Version: 0.0.110
+Date: 2018-07-27
 Authors@R: person("Stuart", "Grange", email = "s.k.grange@gmail.com", 
     role = c("cre", "aut"))
 Maintainer: Stuart K. Grange <s.k.grange@gmail.com>
@@ -19,6 +19,7 @@ Imports:
     tidyr,
     magrittr
 Suggests:
+    testthat,
     databaser,
     threadr
 LazyLoad: yes

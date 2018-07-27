@@ -667,7 +667,10 @@ get_registrations_for_makes <- function(con, make) {
 import_vehicle_odometers <- function(con, registration = NA) {
   
   # Select statement
-  sql_select <- "SELECT * FROM vehicle_odometers ORDER BY data_source, registration"
+  sql_select <- "
+    SELECT * 
+    FROM vehicle_odometers ORDER BY data_source, registration, date
+  "
   
   # Add where clause if needed
   if (!is.na(registration[1])) {
