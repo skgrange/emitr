@@ -19,7 +19,7 @@
 #' 
 #' @param no2 Name of NO[2] ratio variable.
 #' 
-#' @return Numeric vector or for \code{data_molar_mass}, a data frame. 
+#' @return Numeric vector or for \code{read_molar_mass_table}, a data frame. 
 #' 
 #' @author Stuart K. Grange
 #' 
@@ -35,11 +35,11 @@ pollutant_ratio_to_fuel_specific_emission <- function(ratio_pollutant,
   pollutant <- stringr::str_trim(pollutant)
   
   # Get molar mass from look up table
-  index <- which(data_molar_mass$variable == pollutant)
+  index <- which(read_molar_mass_table()$variable == pollutant)
   if (length(index) == 0) stop("Pollutant not recognised...", call. = FALSE)
   
   # Get mass from table
-  molar_mass <- data_molar_mass$molar_mass[index]
+  molar_mass <- read_molar_mass_table()$molar_mass[index]
   
   # The fuel specific calculation
   x <- (1 / 0.014) * molar_mass * ratio_pollutant / (1 + ratio_co + 3 * ratio_hc)
@@ -51,16 +51,21 @@ pollutant_ratio_to_fuel_specific_emission <- function(ratio_pollutant,
 
 #' @rdname pollutant_ratio_to_fuel_specific_emission
 #' @export
-data_molar_mass <- dplyr::tribble(
-  ~variable, ~molar_mass, ~notes,
-  "no", 30, NA,
-  "no2", 46, NA,
-  "nox", 46, "use no2's mass",
-  "hc", 88, NA,
-  "nh3", 17, NA,
-  "co", 28, NA,
-  "co2", 44, NA
-)
+read_molar_mass_table <- function() {
+
+  dplyr::tribble(
+    ~variable, ~molar_mass, ~notes,
+    "no", 30, NA,
+    "no2", 46, NA,
+    "nox", 46, "use no2's mass",
+    "hc", 88, NA,
+    "nh3", 17, NA,
+    "co", 28, NA,
+    "co2", 44, NA,
+    "so2", 64.066, NA
+  )  
+  
+}
 
 
 #' @rdname pollutant_ratio_to_fuel_specific_emission
@@ -70,8 +75,19 @@ pollutant_to_co2_ratio <- function(pollutant, co2) pollutant / co2
 
 #' @rdname pollutant_ratio_to_fuel_specific_emission
 #' @export
-nox_as_no2_equivalent <- function(no, no2) no2 + no * 46 / 30
-
+nox_as_no2_equivalent <- function(no, no2) {
+  
+  # Get constants
+  df <- read_molar_mass_table()
+  mass_no <- df[df$variable == "no", "molar_mass", drop = TRUE]
+  mass_no2 <- df[df$variable == "no2", "molar_mass", drop = TRUE]
+  
+  # Calculate
+  x <- no2 + no * mass_no2 / mass_no
+  
+  return(x)
+  
+}
 
 # emi <- mutate(emi, 
 #               Q_NO =  X.NO / X.CO2,

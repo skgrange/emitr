@@ -52,7 +52,7 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
   if (verbose) message(sql_select)
   
   # Query
-  df <- databaser::db_get(con, sql_select)
+  df <- databaser::db_get(con, databaser::db_wildcard_check(sql_select))
   
   # Make wider
   if (spread) {
@@ -245,7 +245,7 @@ import_vehicle_captures <- function(con, registration = NA, site = NA,
   if (verbose) message(sql_select)
   
   # Query
-  df <- databaser::db_get(con, sql_select) %>% 
+  df <- databaser::db_get(con, databaser::db_wildcard_check(sql_select)) %>% 
     mutate(date = threadr::parse_unix_time(date))
   
   # A test for co2, it is also in `vehicle_details`
@@ -401,7 +401,7 @@ import_meteorology <- function(con, site = NA, spread = TRUE) {
   sql_select <- stringr::str_squish(sql_select)
   
   # Query
-  df <- databaser::db_get(con, sql_select)
+  df <- databaser::db_get(con, databaser::db_wildcard_check(sql_select))
   
   if (nrow(df) != 0) {
     
@@ -457,7 +457,7 @@ sample_registrations <- function(con, n = 1, sort = FALSE) {
     stringr::str_squish()
   
   # Query
-  x <- databaser::db_get(con, sql_select)[, 1]
+  x <- databaser::db_get(con, databaser::db_wildcard_check(sql_select))[, 1]
   
   # Alphabetical sort
   if (sort) x <- sort(x)
@@ -693,8 +693,7 @@ import_vehicle_odometers <- function(con, registration = NA) {
   }
   
   # Query database
-  databaser::db_wildcard_check(registration)
-  df <- databaser::db_get(con, sql_select)
+  df <- databaser::db_get(con, databaser::db_wildcard_check(sql_select))
   
   # Parse dates
   if (nrow(df) != 0)

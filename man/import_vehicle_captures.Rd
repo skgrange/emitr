@@ -4,8 +4,8 @@
 \alias{import_vehicle_captures}
 \title{Function to import vehicle capture data from a vehicle emissions database.}
 \usage{
-import_vehicle_captures(con, registration = NA, site = NA, spread = TRUE,
-  verbose = FALSE)
+import_vehicle_captures(con, registration = NA, site = NA,
+  spread = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{con}{Database connection to a vehicle emissions database.}

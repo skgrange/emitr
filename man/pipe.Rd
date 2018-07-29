@@ -2,7 +2,6 @@
 % Please edit documentation in R/dplyr_re_exports.R, R/pipe_re_export.R
 \name{\%>\%}
 \alias{\%>\%}
-\alias{\%>\%}
 \title{Pseudo-function to re-export \strong{magrittr}'s pipe.}
 \description{
 Pseudo-function to re-export \strong{magrittr}'s pipe.
