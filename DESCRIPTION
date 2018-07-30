@@ -1,7 +1,7 @@
 Package: emitr
 Type: Package
 Title: Tools to Help With On-Road Vehicle Emission Data Analysis
-Version: 0.0.113
+Version: 0.0.114
 Date: 2018-07-30
 Authors@R: person("Stuart", "Grange", email = "s.k.grange@gmail.com", 
     role = c("cre", "aut"))

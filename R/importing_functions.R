@@ -177,9 +177,6 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
 #' @param registration A vector of registrations to return. If not used, all
 #' registrations will be selected. 
 #' 
-#' @param site A vector of sites to return. If not used, all sites will be 
-#' selected. 
-#' 
 #' @param spread Should the table be reshaped and made wider? 
 #' 
 #' @param verbose Should the function give messages? 
@@ -187,65 +184,28 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
 #' @return Data frame. 
 #' 
 #' @export
-import_vehicle_captures <- function(con, registration = NA, site = NA,
-                                    spread = TRUE, verbose = FALSE) {
+import_vehicle_captures <- function(con, registration = NA, spread = TRUE, 
+                                    verbose = FALSE) {
   
   # Check inputs
-  databaser::db_wildcard_check(c(registration, site))
+  databaser::db_wildcard_check(registration)
   
-  sql_select <- stringr::str_c(
-    "SELECT vehicle_captures.*,
-    sessions.site,
-    sites.site_name,
-    sessions.instrument,
-    sessions.vehicle_details_data_source AS data_source,
-    sessions.field_campaign,
-    sessions.site_met
-    FROM vehicle_captures
-    LEFT JOIN sessions
-    ON vehicle_captures.session = sessions.session
-    LEFT JOIN sites
-    ON sessions.site = sites.site"
-  )
-  
-  # Add where clause for site
-  if (!is.na(site[1])) {
-    
-    site <- site %>% 
-      stringr::str_trim() %>% 
-      stringr::str_c(collapse = ",")
-    
-    sql_select <- stringr::str_c(
-      sql_select, 
-      " WHERE sessions.site IN (", site, ")"
-    ) 
-    
-  }
+  # Build select statement
+  sql_select <- vehicle_captures_select_statement()
   
   if (!is.na(registration[1])) {
     
     # Parse registration
     registration <- make_sql_registration(registration)
     
-    if (grepl("WHERE sessions.site", sql_select)) {
-      
-      sql_select <- stringr::str_c(
-        sql_select, 
-        " AND registration IN (", registration, ")"
-      )
-      
-    } else {
-      
-      sql_select <- stringr::str_c(
-        sql_select, 
-        " WHERE registration IN (", registration, ")"
-      )
-      
-    }
+    sql_select <- stringr::str_c(
+      sql_select, 
+      " WHERE registration IN (", registration, ")"
+    )
     
   }
   
-  # Clean
+  # Clean statement
   sql_select <- stringr::str_squish(sql_select)
   
   if (verbose) message(sql_select)
@@ -258,8 +218,36 @@ import_vehicle_captures <- function(con, registration = NA, site = NA,
   df <- mutate(df, variable = ifelse(variable == "co2", "co2_capture", variable))
   
   # Reshape
-  if (spread) 
-    df <- tidyr::spread(select(df, -validity), variable, value, convert = TRUE)
+  if (spread) df <- spread_vehicle_captures_table(df)
+  
+  return(df)
+  
+}
+
+
+vehicle_captures_select_statement <- function() {
+  
+  # Default statement
+  "SELECT vehicle_captures.*,
+    sessions.site,
+    sites.site_name,
+    sessions.instrument,
+    sessions.vehicle_details_data_source AS data_source,
+    sessions.field_campaign,
+    sessions.site_met
+    FROM vehicle_captures
+    LEFT JOIN sessions
+    ON vehicle_captures.session = sessions.session
+    LEFT JOIN sites
+    ON sessions.site = sites.site"
+  
+}
+
+
+spread_vehicle_captures_table <- function(df) {
+  
+  # Reshape
+  df <- tidyr::spread(select(df, -validity), variable, value, convert = TRUE)
   
   # Clean return
   df <- df %>% 
@@ -278,6 +266,7 @@ import_vehicle_captures <- function(con, registration = NA, site = NA,
   return(df)
   
 }
+  
 
 
 make_sql_registration <- function(x) {
@@ -515,10 +504,19 @@ import_vehicle_emissions <- function(con, registration = NA, verbose = FALSE) {
   if (verbose) message(threadr::str_date_formatted(), ": Joining data...")
   df <- left_join(df_captures, df_details, by = c("registration", "data_source"))
   
+  # Final formatting
+  df <- order_capture_and_details_variables(df)
+
+  return(df)
+  
+}
+
+
+order_capture_and_details_variables <- function(df) {
+  
   if (nrow(df) != 0) {
     
-    # Order variables
-    df <- df %>% 
+    df %>% 
       select(session,
              instrument,
              data_source,
@@ -717,3 +715,101 @@ import_vehicle_odometers <- function(con, registration = NA) {
   return(df)
   
 }
+
+
+#' Function to import vehicle emissions data by session from a vehicle emissions
+#' database. 
+#' 
+#' @author Stuart K. Grange
+#' 
+#' @param con Database connection to a vehicle emissions database. 
+#' 
+#' @param session A vector of registrations to return. If not used, all
+#' registrations will be selected. 
+#' 
+#' @param parse_dates Should date variables be parsed? 
+#' 
+#' @param verbose Should the function give messages? 
+#' 
+#' @return Data frame. 
+#' 
+#' @export
+import_by_session <- function(con, session = NA, parse_dates = TRUE, 
+                              verbose = FALSE) {
+  
+  if (verbose) 
+    message(threadr::str_date_formatted(), ": Importing vehicle capture data...")
+  
+  # Verbose is a sql printer argument
+  df_captures <- import_by_session_captures(
+    con, 
+    session = session, 
+    verbose = FALSE
+  )
+  
+  if (verbose) 
+    message(threadr::str_date_formatted(), ": Importing vehicle details data...")
+  
+  df_details <- import_vehicle_details(
+    con, 
+    registration = sort(unique(df_captures$registration)), 
+    spread = TRUE,
+    parse_dates = parse_dates
+  )
+  
+  # Join
+  if (verbose) message(threadr::str_date_formatted(), ": Joining data...")
+  
+  df <- left_join(df_captures, df_details, by = c("data_source", "registration"))
+  
+  # Final formatting
+  df <- order_capture_and_details_variables(df)
+  
+  return(df)
+  
+}
+
+
+import_by_session_captures <- function(con, session, verbose) {
+  
+  # Check input
+  databaser::db_wildcard_check(session)
+  
+  # Create select statement
+  sql_select <- vehicle_captures_select_statement()
+  
+  # Add a where clause for session
+  if (!is.na(session[1])) {
+    
+    # Parse session
+    session <- stringr::str_c(session, collapse = ",")
+    
+    # Build where clause, watch space
+    sql_where <- stringr::str_c(
+      " WHERE vehicle_captures.session IN (", session, ")"
+    )
+    
+    # Add where clause
+    sql_select <- stringr::str_c(sql_select, sql_where)
+    
+  }
+  
+  # Clean statement
+  sql_select <- stringr::str_squish(sql_select)
+  
+  if (verbose) message(sql_select)
+  
+  # Query database
+  df <- databaser::db_get(con, sql_select) %>% 
+    mutate(date = threadr::parse_unix_time(date))
+  
+  # A test for co2, it is also in `vehicle_details`
+  df <- mutate(df, variable = ifelse(variable == "co2", "co2_capture", variable))
+  
+  # Reshape
+  df <- spread_vehicle_captures_table(df)
+  
+  return(df)
+  
+}
+
