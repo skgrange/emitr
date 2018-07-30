@@ -19,6 +19,9 @@
 import_vehicle_details <- function(con, registration = NA, spread = TRUE, 
                                    parse_dates = TRUE, verbose = FALSE) {
   
+  # Check inputs
+  databaser::db_wildcard_check(registration)
+  
   if (is.na(registration[1])) {
     
     sql_select <- stringr::str_c(
@@ -52,7 +55,7 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
   if (verbose) message(sql_select)
   
   # Query
-  df <- databaser::db_get(con, databaser::db_wildcard_check(sql_select))
+  df <- databaser::db_get(con, sql_select)
   
   # Make wider
   if (spread) {
@@ -187,6 +190,9 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
 import_vehicle_captures <- function(con, registration = NA, site = NA,
                                     spread = TRUE, verbose = FALSE) {
   
+  # Check inputs
+  databaser::db_wildcard_check(c(registration, site))
+  
   sql_select <- stringr::str_c(
     "SELECT vehicle_captures.*,
     sessions.site,
@@ -212,7 +218,7 @@ import_vehicle_captures <- function(con, registration = NA, site = NA,
     sql_select <- stringr::str_c(
       sql_select, 
       " WHERE sessions.site IN (", site, ")"
-    )
+    ) 
     
   }
   
@@ -245,7 +251,7 @@ import_vehicle_captures <- function(con, registration = NA, site = NA,
   if (verbose) message(sql_select)
   
   # Query
-  df <- databaser::db_get(con, databaser::db_wildcard_check(sql_select)) %>% 
+  df <- databaser::db_get(con, sql_select) %>% 
     mutate(date = threadr::parse_unix_time(date))
   
   # A test for co2, it is also in `vehicle_details`
@@ -373,6 +379,9 @@ import_sites <- function(con) {
 #' @export
 import_meteorology <- function(con, site = NA, spread = TRUE) {
   
+  # Check inputs
+  databaser::db_wildcard_check(site)
+  
   # Query
   sql_select <- stringr::str_c(
     "SELECT observations_meteorological.*,
@@ -401,7 +410,7 @@ import_meteorology <- function(con, site = NA, spread = TRUE) {
   sql_select <- stringr::str_squish(sql_select)
   
   # Query
-  df <- databaser::db_get(con, databaser::db_wildcard_check(sql_select))
+  df <- databaser::db_get(con, sql_select)
   
   if (nrow(df) != 0) {
     
@@ -628,6 +637,9 @@ import_distinct_registrations <- function(con, as.logical = FALSE) {
 #' @export
 get_registrations_for_makes <- function(con, make) {
   
+  # Check inputs
+  databaser::db_wildcard_check(make)
+  
   # Format make
   make <- stringr::str_trim(make)
   make <- stringr::str_to_upper(make)
@@ -666,6 +678,9 @@ get_registrations_for_makes <- function(con, make) {
 #' @export
 import_vehicle_odometers <- function(con, registration = NA) {
   
+  # Check inputs
+  databaser::db_wildcard_check(registration)
+  
   # Select statement
   sql_select <- "
     SELECT * 
@@ -692,8 +707,8 @@ import_vehicle_odometers <- function(con, registration = NA) {
     
   }
   
-  # Query database
-  df <- databaser::db_get(con, databaser::db_wildcard_check(sql_select))
+  # Query database, no wildcard check here
+  df <- databaser::db_get(con, sql_select)
   
   # Parse dates
   if (nrow(df) != 0)
