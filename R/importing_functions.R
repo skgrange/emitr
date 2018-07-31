@@ -724,8 +724,8 @@ import_vehicle_odometers <- function(con, registration = NA) {
 #' 
 #' @param con Database connection to a vehicle emissions database. 
 #' 
-#' @param session A vector of registrations to return. If not used, all
-#' registrations will be selected. 
+#' @param session A vector of sessions to return. If not used, data from all
+#' sessions will be selected. 
 #' 
 #' @param parse_dates Should date variables be parsed? 
 #' 
@@ -737,10 +737,12 @@ import_vehicle_odometers <- function(con, registration = NA) {
 import_by_session <- function(con, session = NA, parse_dates = TRUE, 
                               verbose = FALSE) {
   
+  if (length(session) == 0) stop("At least one `session` needs to be supplied...")
+  
   if (verbose) 
     message(threadr::str_date_formatted(), ": Importing vehicle capture data...")
   
-  # Verbose is a sql printer argument
+  # Verbose is a sql printer argument in this function, not needed
   df_captures <- import_by_session_captures(
     con, 
     session = session, 
@@ -808,6 +810,77 @@ import_by_session_captures <- function(con, session, verbose) {
   
   # Reshape
   df <- spread_vehicle_captures_table(df)
+  
+  return(df)
+  
+}
+
+
+#' Function to import vehicle emissions data by site from a vehicle emissions
+#' database. 
+#' 
+#' @author Stuart K. Grange
+#' 
+#' @param con Database connection to a vehicle emissions database. 
+#' 
+#' @param site A vector of sites to return. If not used, data from all sites
+#' will be selected. 
+#' 
+#' @param parse_dates Should date variables be parsed? 
+#' 
+#' @param verbose Should the function give messages? 
+#' 
+#' @return Data frame. 
+#' 
+#' @export
+import_by_site <- function(con, site = NA, parse_dates = TRUE, verbose = FALSE) {
+  
+  # Check input
+  databaser::db_wildcard_check(site)
+  
+  if (!is.na(site[1])) {
+    
+    # Format site for sql
+    if (verbose) message(threadr::str_date_formatted(), ": Determining sessions...")
+    
+    site <- unique(site)
+    site <- stringr::str_c(site, collapse = ",")
+    
+    # Get session keys for sites
+    session <- databaser::db_get(
+      con, 
+      stringr::str_c(
+        "SELECT session
+      FROM sessions
+      WHERE site IN (", site, ")"
+      )
+    )[, ]
+    
+  } else {
+    
+    # All sessions will be selected
+    session <- NA
+    
+  }
+  
+  if (length(session) != 0) {
+    
+    # Use lower level function
+    df <- import_by_session(
+      con, 
+      session = session,
+      parse_dates = parse_dates, 
+      verbose = verbose
+    )
+    
+  } else {
+    
+    warning("No data found for `site` used...", call. = FALSE)
+    
+    # Return empty data frame
+    df <- data.frame()
+    
+  }
   
   return(df)
   

@@ -11,8 +11,8 @@ import_by_session(con, session = NA, parse_dates = TRUE,
 \arguments{
 \item{con}{Database connection to a vehicle emissions database.}
 
-\item{session}{A vector of registrations to return. If not used, all
-registrations will be selected.}
+\item{session}{A vector of sessions to return. If not used, data from all
+sessions will be selected.}
 
 \item{parse_dates}{Should date variables be parsed?}
 
