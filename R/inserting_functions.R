@@ -92,8 +92,7 @@ insert_vehicle_details <- function(con, df, verbose = FALSE) {
   if (verbose) message(threadr::str_date_formatted(), ": Checking input...")
   
   # Check input
-  if (anyNA(df[, !(names(df) == "vin")])) 
-    stop("Missing data are not allowed...", call. = FALSE)
+  if (anyNA(df)) stop("Missing data are not allowed...", call. = FALSE)
   
   # na.rm for vin variable
   if (any(df == "", na.rm = TRUE)) 
@@ -128,7 +127,7 @@ insert_vehicle_details <- function(con, df, verbose = FALSE) {
   ) %>% 
     stringr::str_squish()
   
-  registrations_db <- databaser::db_get(con, sql_select)[,]
+  registrations_db <- databaser::db_get(con, sql_select)[, ]
   
   if (any(unique(df$registration) %in% registrations_db)) 
     stop("`registrations` are already in database...", call. = FALSE)
@@ -155,7 +154,7 @@ insert_vehicle_details <- function(con, df, verbose = FALSE) {
     
   }
   
-  # Insert
+  # Do the insert
   if (verbose) message(threadr::str_date_formatted(), ": Inserting...")
   databaser::db_insert(con, "vehicle_details", df)
   
@@ -213,7 +212,8 @@ allowed_vehicle_details_variables <- function() {
     "vehicle_series", "vehicle_width", "visibility_date", 
     "wheelbase_length", "wheelplan", "engine_number", "noise_drive_by", 
     "noise_engine", "noise_stationary", "power_to_weight", 
-    "smmt_market_sector_line", "trailer_braked", "vin")
+    "smmt_market_sector_line", "trailer_braked", "vin", "colour_secondary", 
+    "engine_code", "chassis_code", "assembly_type", "vehicle_equipment_class")
   
 }
 

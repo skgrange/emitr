@@ -211,14 +211,20 @@ import_vehicle_captures <- function(con, registration = NA, spread = TRUE,
   if (verbose) message(sql_select)
   
   # Query
-  df <- databaser::db_get(con, sql_select) %>% 
-    mutate(date = threadr::parse_unix_time(date))
+  df <- databaser::db_get(con, sql_select)
   
-  # A test for co2, it is also in `vehicle_details`
-  df <- mutate(df, variable = ifelse(variable == "co2", "co2_capture", variable))
-  
-  # Reshape
-  if (spread) df <- spread_vehicle_captures_table(df)
+  if (nrow(df) != 0) {
+    
+    # Parse dates
+    # A test for co2, it is also in `vehicle_details`
+    df <- df %>% 
+      mutate(date = threadr::parse_unix_time(date),
+             variable = ifelse(variable == "co2", "co2_capture", variable))
+    
+    # Reshape
+    if (spread) df <- spread_vehicle_captures_table(df)
+    
+  }
   
   return(df)
   
