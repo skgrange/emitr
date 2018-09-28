@@ -1,13 +1,14 @@
 Package: emitr
 Type: Package
 Title: Tools to Help With On-Road Vehicle Emission Data Analysis
-Version: 0.0.116
-Date: 2018-08-03
+Version: 0.0.118
+Date: 2018-09-28
 Authors@R: person("Stuart", "Grange", email = "s.k.grange@gmail.com", 
     role = c("cre", "aut"))
 Maintainer: Stuart K. Grange <s.k.grange@gmail.com>
 Description: A framework and toolset to analyse on-road emission data. 
 URL: https://github.com/skgrange/emitr
+BugReports: https://github.com/skgrange/emitr/issues
 License: GPL-3 | file LICENSE
 ByteCompile: true
 Depends:

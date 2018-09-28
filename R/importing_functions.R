@@ -57,6 +57,9 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
   # Query
   df <- databaser::db_get(con, sql_select)
   
+  # If no data return here
+  if (nrow(df) == 0) return(df)
+  
   # Make wider
   if (spread) {
     
@@ -461,7 +464,8 @@ sample_registrations <- function(con, n = 1, sort = FALSE) {
     stringr::str_squish()
   
   # Query
-  x <- databaser::db_get(con, databaser::db_wildcard_check(sql_select))[, 1]
+  x <- databaser::db_get(con, databaser::db_wildcard_check(sql_select)) %>% 
+    pull()
   
   # Alphabetical sort
   if (sort) x <- sort(x)
@@ -568,7 +572,8 @@ get_all_vehicle_makes <- function(con) {
     FROM vehicle_details
     WHERE variable = 'make'
     ORDER BY value"
-  )[, ]
+  ) %>% 
+    pull()
   
 }
 
@@ -860,7 +865,8 @@ import_by_site <- function(con, site = NA, parse_dates = TRUE, verbose = FALSE) 
       FROM sessions
       WHERE site IN (", site, ")"
       )
-    )[, ]
+    ) %>% 
+      pull()
     
   } else {
     
