@@ -14,7 +14,7 @@ import_distinct_registrations(con, as.logical = FALSE)
 registraion exists or not?}
 }
 \value{
-Data frame.
+Tibble.
 }
 \description{
 Function to import all distinct registrations from a vehicle emissions 

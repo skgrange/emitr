@@ -13,7 +13,7 @@
 #' 
 #' @param verbose Should the function give messages? 
 #' 
-#' @return Data frame. 
+#' @return Tibble. 
 #' 
 #' @export
 import_vehicle_details <- function(con, registration = NA, spread = TRUE, 
@@ -184,7 +184,7 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
 #' 
 #' @param verbose Should the function give messages? 
 #' 
-#' @return Data frame. 
+#' @return Tibble. 
 #' 
 #' @export
 import_vehicle_captures <- function(con, registration = NA, spread = TRUE, 
@@ -297,7 +297,7 @@ make_sql_registration <- function(x) {
 #' 
 #' @param con Database connection to a vehicle emissions database. 
 #' 
-#' @return Data frame. 
+#' @return Tibble. 
 #' 
 #' @export
 import_sessions <- function(con) {
@@ -372,7 +372,7 @@ import_sites <- function(con) {
 #' 
 #' @param spread Should the table be reshaped and made wider? 
 #' 
-#' @return Data frame. 
+#' @return Tibble. 
 #' 
 #' @export
 import_meteorology <- function(con, site = NA, spread = TRUE) {
@@ -428,7 +428,7 @@ import_meteorology <- function(con, site = NA, spread = TRUE) {
     
   } else {
     
-    df <- data.frame()
+    df <- tibble()
     
   }
   
@@ -486,7 +486,7 @@ sample_registrations <- function(con, n = 1, sort = FALSE) {
 #' 
 #' @param verbose Should the function give messages? 
 #' 
-#' @return Data frame. 
+#' @return Tibble. 
 #' 
 #' @export
 import_vehicle_emissions <- function(con, registration = NA, verbose = FALSE) {
@@ -546,7 +546,7 @@ order_capture_and_details_variables <- function(df) {
     
   } else {
     
-    df <- data.frame()
+    df <- tibble()
     
   }
   
@@ -588,7 +588,7 @@ get_all_vehicle_makes <- function(con) {
 #' @param as.logical Should the data frame contain tests indicating if the 
 #' registraion exists or not? 
 #' 
-#' @return Data frame.  
+#' @return Tibble. 
 #' 
 #' @export
 import_distinct_registrations <- function(con, as.logical = FALSE) {
@@ -641,7 +641,7 @@ import_distinct_registrations <- function(con, as.logical = FALSE) {
 #' 
 #' @section \code{\link{get_all_vehicle_makes}}
 #' 
-#' @return Data frame. 
+#' @return Tibble. 
 #'  
 #' @export
 get_registrations_for_makes <- function(con, make) {
@@ -682,7 +682,7 @@ get_registrations_for_makes <- function(con, make) {
 #'
 #' @param registration A vector of vehicle registrations to filter return to.
 #' 
-#' @return Data frame. 
+#' @return Tibble. 
 #'  
 #' @export
 import_vehicle_odometers <- function(con, registration = NA) {
@@ -742,7 +742,7 @@ import_vehicle_odometers <- function(con, registration = NA) {
 #' 
 #' @param verbose Should the function give messages? 
 #' 
-#' @return Data frame. 
+#' @return Tibble. 
 #' 
 #' @export
 import_by_session <- function(con, session = NA, parse_dates = TRUE, 
@@ -841,7 +841,7 @@ import_by_session_captures <- function(con, session, verbose) {
 #' 
 #' @param verbose Should the function give messages? 
 #' 
-#' @return Data frame. 
+#' @return Tibble. 
 #' 
 #' @export
 import_by_site <- function(con, site = NA, parse_dates = TRUE, verbose = FALSE) {
@@ -889,8 +889,8 @@ import_by_site <- function(con, site = NA, parse_dates = TRUE, verbose = FALSE) 
     
     warning("No data found for `site` used...", call. = FALSE)
     
-    # Return empty data frame
-    df <- data.frame()
+    # Return an empty tibble
+    df <- tibble()
     
   }
   

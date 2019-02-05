@@ -19,7 +19,7 @@ sessions will be selected.}
 \item{verbose}{Should the function give messages?}
 }
 \value{
-Data frame.
+Tibble.
 }
 \description{
 Function to import vehicle emissions data by session from a vehicle emissions

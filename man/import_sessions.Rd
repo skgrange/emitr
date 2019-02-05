@@ -10,7 +10,7 @@ import_sessions(con)
 \item{con}{Database connection to a vehicle emissions database.}
 }
 \value{
-Data frame.
+Tibble.
 }
 \description{
 Function to import sessions data from a vehicle emissions database.

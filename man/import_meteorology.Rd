@@ -14,7 +14,7 @@ import_meteorology(con, site = NA, spread = TRUE)
 \item{spread}{Should the table be reshaped and made wider?}
 }
 \value{
-Data frame.
+Tibble.
 }
 \description{
 Function to import meteorological data from a vehicle emissions database.

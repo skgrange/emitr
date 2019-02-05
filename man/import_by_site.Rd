@@ -18,7 +18,7 @@ will be selected.}
 \item{verbose}{Should the function give messages?}
 }
 \value{
-Data frame.
+Tibble.
 }
 \description{
 Function to import vehicle emissions data by site from a vehicle emissions

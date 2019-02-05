@@ -12,7 +12,7 @@ import_vehicle_odometers(con, registration = NA)
 \item{registration}{A vector of vehicle registrations to filter return to.}
 }
 \value{
-Data frame.
+Tibble.
 }
 \description{
 Function to import vehicle odometer data from a vehicle emissions database.

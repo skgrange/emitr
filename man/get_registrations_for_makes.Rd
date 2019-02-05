@@ -12,7 +12,7 @@ get_registrations_for_makes(con, make)
 \item{make}{A vector of vehicle makes.}
 }
 \value{
-Data frame.
+Tibble.
 }
 \description{
 Function to return registrations for particular vehicle makes.
