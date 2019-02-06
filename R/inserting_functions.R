@@ -32,7 +32,8 @@ insert_vehicle_captures <- function(con, df, verbose = FALSE) {
     con, 
     "SELECT DISTINCT session 
     FROM sessions"
-  )[, ]
+  ) %>% 
+    pull()
   
   if (!all(unique(df$session) %in% sessions_db)) {
     
@@ -108,7 +109,8 @@ insert_vehicle_details <- function(con, df, verbose = FALSE) {
     con, 
     "SELECT DISTINCT data_source 
     FROM vehicle_details_data_sources"
-  )[, ]
+  ) %>% 
+    pull()
   
   if (!data_source %in% data_sources_db) {
     
@@ -192,7 +194,8 @@ allowed_vehicle_captures_variables <- function() {
 #' @export
 allowed_vehicle_details_variables <- function() {
   
-  c("acceleration_kph", "acceleration_mph", "axle_count", "bhp_count", 
+  c(
+    "acceleration_kph", "acceleration_mph", "axle_count", "bhp_count", 
     "body", "body_description", "body_shape_roof_height", "bore", 
     "cab_type", "cc", "co2", "colour", "combined_lkm", "combined_mpg", 
     "cylinder_arrangement", "cylinder_count", "door_count", "drive_axle", 
@@ -213,7 +216,8 @@ allowed_vehicle_details_variables <- function() {
     "wheelbase_length", "wheelplan", "engine_number", "noise_drive_by", 
     "noise_engine", "noise_stationary", "power_to_weight", 
     "smmt_market_sector_line", "trailer_braked", "vin", "colour_secondary", 
-    "engine_code", "chassis_code", "assembly_type", "vehicle_equipment_class")
+    "engine_code", "chassis_code", "assembly_type", "vehicle_equipment_class"
+  )
   
 }
 
@@ -259,12 +263,24 @@ insert_sessions <- function(con, df) {
 #' @export
 get_sessions <- function(con) {
   
-  databaser::db_get(
+  df <- databaser::db_get(
     con, 
     "SELECT DISTINCT session 
     FROM sessions 
     ORDER BY session"
-  )[, ]
+  )
+  
+  if (nrow(df) == 0) {
+    
+    x <- NA
+    
+  } else {
+    
+    x <- pull(df)
+    
+  }
+  
+  return(x)
   
 }
 
@@ -286,6 +302,7 @@ get_sites <- function(con) {
     "SELECT DISTINCT site 
     FROM sites 
     ORDER BY site"
-  )[, ]
+  ) %>% 
+    pull()
   
 }
