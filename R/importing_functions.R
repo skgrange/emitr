@@ -623,7 +623,7 @@ import_distinct_registrations <- function(con, as.logical = FALSE) {
     # Back to df
     df <- df_c %>%
       dplyr::full_join(df_d, by= "registration") %>%
-      dplyr::mutate_if(is.logical, dplyr::funs(ifelse(is.na(.), FALSE, .))) %>% 
+      dplyr::mutate_if(is.logical, ~ifelse(is.na(.), FALSE, .)) %>% 
       arrange(registration)
     
   }

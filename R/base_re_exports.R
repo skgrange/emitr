@@ -1,4 +1,4 @@
 #' Pseudo-function to re-export functions from the \strong{stats} package. 
 #'
-#' @importFrom stats na.omit
+#' @importFrom stats na.omit setNames
 NULL
