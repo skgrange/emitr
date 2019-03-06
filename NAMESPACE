@@ -3,6 +3,7 @@
 export("%>%")
 export(allowed_vehicle_captures_variables)
 export(allowed_vehicle_details_variables)
+export(character_validity_to_binary)
 export(clean_opus_post_processor)
 export(get_all_vehicle_makes)
 export(get_registrations_for_makes)

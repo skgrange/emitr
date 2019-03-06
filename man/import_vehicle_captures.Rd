@@ -4,14 +4,16 @@
 \alias{import_vehicle_captures}
 \title{Function to import vehicle capture data from a vehicle emissions database.}
 \usage{
-import_vehicle_captures(con, registration = NA, spread = TRUE,
-  verbose = FALSE)
+import_vehicle_captures(con, registration = NA, valid_only = FALSE,
+  spread = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{con}{Database connection to a vehicle emissions database.}
 
 \item{registration}{A vector of registrations to return. If not used, all
 registrations will be selected.}
+
+\item{valid_only}{Should only valid data be returned?}
 
 \item{spread}{Should the table be reshaped and made wider?}
 

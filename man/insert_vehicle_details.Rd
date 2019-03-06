@@ -14,7 +14,7 @@ insert_vehicle_details(con, df, verbose = FALSE)
 \item{verbose}{Should the function give messages?}
 }
 \value{
-Invisible, a database insert.
+Invisible \code{con}.
 }
 \description{
 Function to insert vehicle capture data into \code{`vehicle_details`}.

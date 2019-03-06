@@ -75,6 +75,16 @@ clean_opus_post_processor <- function(df, df_images = NA) {
 }
 
 
+#' Function to transform Opus's character-based RSD post-processsor validity 
+#' codes to a binary validity. 
+#' 
+#' @author Stuart K. Grange. 
+#' 
+#' @param x Opus's character-based RSD post-processsor validity vector.
+#' 
+#' @return Logical vector. 
+#' 
+#' @export
 character_validity_to_binary <- function(x) {
   
   x <- stringr::str_to_lower(x)

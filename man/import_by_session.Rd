@@ -6,7 +6,7 @@
 database.}
 \usage{
 import_by_session(con, session = NA, parse_dates = TRUE,
-  verbose = FALSE)
+  valid_only = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{con}{Database connection to a vehicle emissions database.}
@@ -15,6 +15,8 @@ import_by_session(con, session = NA, parse_dates = TRUE,
 sessions will be selected.}
 
 \item{parse_dates}{Should date variables be parsed?}
+
+\item{valid_only}{Should only valid data be returned?}
 
 \item{verbose}{Should the function give messages?}
 }

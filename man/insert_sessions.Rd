@@ -12,7 +12,7 @@ insert_sessions(con, df)
 \item{df}{Input data frame to insert into \code{`sessions`}.}
 }
 \value{
-Invisible, a database insert.
+Invisible \code{con}.
 }
 \description{
 Function to insert session data into \code{`sessions`}.

@@ -180,6 +180,8 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
 #' @param registration A vector of registrations to return. If not used, all
 #' registrations will be selected. 
 #' 
+#' @param valid_only Should only valid data be returned?  
+#' 
 #' @param spread Should the table be reshaped and made wider? 
 #' 
 #' @param verbose Should the function give messages? 
@@ -187,8 +189,8 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
 #' @return Tibble. 
 #' 
 #' @export
-import_vehicle_captures <- function(con, registration = NA, spread = TRUE, 
-                                    verbose = FALSE) {
+import_vehicle_captures <- function(con, registration = NA, valid_only = FALSE,
+                                    spread = TRUE, verbose = FALSE) {
   
   # Check inputs
   databaser::db_wildcard_check(registration)
@@ -215,6 +217,11 @@ import_vehicle_captures <- function(con, registration = NA, spread = TRUE,
   
   # Query
   df <- databaser::db_get(con, sql_select)
+  
+  # Drop invalid observations
+  if (valid_only) {
+    df <- filter(df, validity == 1 | is.na(validity))
+  }
   
   if (nrow(df) != 0) {
     
@@ -484,25 +491,31 @@ sample_registrations <- function(con, n = 1, sort = FALSE) {
 #' @param registration A vector of registrations to return. If not used, all
 #' registrations will be selected. 
 #' 
+#' @param valid_only Should only valid data be returned?  
+#' 
 #' @param verbose Should the function give messages? 
 #' 
 #' @return Tibble. 
 #' 
 #' @export
-import_vehicle_emissions <- function(con, registration = NA, verbose = FALSE) {
+import_vehicle_emissions <- function(con, registration = NA, valid_only = FALSE,
+                                     verbose = FALSE) {
   
-  if (verbose) 
-    message(threadr::str_date_formatted(), ": Importing vehicle capture data...")
+  if (verbose) {
+    message(threadr::date_message(), "Importing vehicle capture data...")
+  }
   
   df_captures <- import_vehicle_captures(
     con, 
     registration = registration,
+    valid_only = valid_only,
     verbose = FALSE
   ) %>% 
     arrange(date)
   
-  if (verbose) 
-    message(threadr::str_date_formatted(), ": Importing vehicle details data...")
+  if (verbose) {
+    message(threadr::date_message(), "Importing vehicle details data...")
+  }
   
   df_details <- import_vehicle_details(
     con, 
@@ -511,7 +524,7 @@ import_vehicle_emissions <- function(con, registration = NA, verbose = FALSE) {
   )
   
   # Join
-  if (verbose) message(threadr::str_date_formatted(), ": Joining data...")
+  if (verbose) message(threadr::date_message(), "Joining data...")
   df <- left_join(df_captures, df_details, by = c("registration", "data_source"))
   
   # Final formatting
@@ -740,28 +753,33 @@ import_vehicle_odometers <- function(con, registration = NA) {
 #' 
 #' @param parse_dates Should date variables be parsed? 
 #' 
+#' @param valid_only Should only valid data be returned? 
+#' 
 #' @param verbose Should the function give messages? 
 #' 
 #' @return Tibble. 
 #' 
 #' @export
 import_by_session <- function(con, session = NA, parse_dates = TRUE, 
-                              verbose = FALSE) {
+                              valid_only = FALSE, verbose = FALSE) {
   
   if (length(session) == 0) stop("At least one `session` needs to be supplied...")
   
-  if (verbose) 
-    message(threadr::str_date_formatted(), ": Importing vehicle capture data...")
+  if (verbose) {
+    message(threadr::date_message(), "Importing vehicle capture data...")
+  }
   
   # Verbose is a sql printer argument in this function, not needed
   df_captures <- import_by_session_captures(
     con, 
     session = session, 
+    valid_only = valid_only,
     verbose = FALSE
   )
   
-  if (verbose) 
-    message(threadr::str_date_formatted(), ": Importing vehicle details data...")
+  if (verbose) {
+    message(threadr::date_message(), "Importing vehicle details data...")
+  }
   
   df_details <- import_vehicle_details(
     con, 
@@ -771,8 +789,7 @@ import_by_session <- function(con, session = NA, parse_dates = TRUE,
   )
   
   # Join
-  if (verbose) message(threadr::str_date_formatted(), ": Joining data...")
-  
+  if (verbose) message(threadr::date_message(), "Joining data...")
   df <- left_join(df_captures, df_details, by = c("data_source", "registration"))
   
   # Final formatting
@@ -783,7 +800,7 @@ import_by_session <- function(con, session = NA, parse_dates = TRUE,
 }
 
 
-import_by_session_captures <- function(con, session, verbose) {
+import_by_session_captures <- function(con, session, valid_only, verbose) {
   
   # Check input
   databaser::db_wildcard_check(session)
@@ -817,7 +834,12 @@ import_by_session_captures <- function(con, session, verbose) {
     mutate(date = threadr::parse_unix_time(date))
   
   # A test for co2, it is also in `vehicle_details`
-  df <- mutate(df, variable = ifelse(variable == "co2", "co2_capture", variable))
+  df <- mutate(df, variable = if_else(variable == "co2", "co2_capture", variable))
+  
+  # Drop invalid observations
+  if (valid_only) {
+    df <- filter(df, validity == 1 | is.na(validity))
+  }
   
   # Reshape
   df <- spread_vehicle_captures_table(df)
@@ -839,12 +861,15 @@ import_by_session_captures <- function(con, session, verbose) {
 #' 
 #' @param parse_dates Should date variables be parsed? 
 #' 
+#' @param valid_only Should only valid data be returned?
+#' 
 #' @param verbose Should the function give messages? 
 #' 
 #' @return Tibble. 
 #' 
 #' @export
-import_by_site <- function(con, site = NA, parse_dates = TRUE, verbose = FALSE) {
+import_by_site <- function(con, site = NA, parse_dates = TRUE, 
+                           valid_only = FALSE, verbose = FALSE) {
   
   # Check input
   databaser::db_wildcard_check(site)
@@ -852,7 +877,7 @@ import_by_site <- function(con, site = NA, parse_dates = TRUE, verbose = FALSE) 
   if (!is.na(site[1])) {
     
     # Format site for sql
-    if (verbose) message(threadr::str_date_formatted(), ": Determining sessions...")
+    if (verbose) message(threadr::date_message(), "Determining sessions...")
     
     site <- unique(site)
     site <- stringr::str_c(site, collapse = ",")
@@ -882,6 +907,7 @@ import_by_site <- function(con, site = NA, parse_dates = TRUE, verbose = FALSE) 
       con, 
       session = session,
       parse_dates = parse_dates, 
+      valid_only = valid_only,
       verbose = verbose
     )
     

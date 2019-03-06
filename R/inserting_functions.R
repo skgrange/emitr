@@ -8,7 +8,7 @@
 #' 
 #' @param verbose Should the function give messages? 
 #' 
-#' @return Invisible, a database insert. 
+#' @return Invisible \code{con}.
 #' 
 #' @export
 insert_vehicle_captures <- function(con, df, verbose = FALSE) {
@@ -20,12 +20,12 @@ insert_vehicle_captures <- function(con, df, verbose = FALSE) {
     anyNA(df$session), 
     anyNA(df$date),
     anyNA(df$variable),
-    anyNA(df$value),
     !is.numeric(df$value)
   )
   
-  if (any(vector_test)) 
+  if (any(vector_test)) {
     stop("There is missing or empty data in critical variables..", call. = FALSE)
+  }
   
   # Check session
   sessions_db <- databaser::db_get(
@@ -36,12 +36,10 @@ insert_vehicle_captures <- function(con, df, verbose = FALSE) {
     pull()
   
   if (!all(unique(df$session) %in% sessions_db)) {
-    
     stop(
       "There are sessions in input not within the `sessions` table...", 
       call. = FALSE
     )
-    
   }
   
   # Check variables
@@ -70,7 +68,7 @@ insert_vehicle_captures <- function(con, df, verbose = FALSE) {
   if (verbose) message(threadr::str_date_formatted(), ": Inserting...")
   databaser::db_insert(con, "vehicle_captures", df)
   
-  # No return
+  return(invisible(con))
   
 }
 
@@ -85,7 +83,7 @@ insert_vehicle_captures <- function(con, df, verbose = FALSE) {
 #' 
 #' @param verbose Should the function give messages? 
 #' 
-#' @return Invisible, a database insert. 
+#' @return Invisible \code{con}.
 #' 
 #' @export
 insert_vehicle_details <- function(con, df, verbose = FALSE) {
@@ -96,14 +94,16 @@ insert_vehicle_details <- function(con, df, verbose = FALSE) {
   if (anyNA(df)) stop("Missing data are not allowed...", call. = FALSE)
   
   # na.rm for vin variable
-  if (any(df == "", na.rm = TRUE)) 
+  if (any(df == "", na.rm = TRUE)) {
     stop("Empty strings are not allowed...", call. = FALSE)
+  }
   
   # Get data source
   data_source <- unique(df$data_source)
   
-  if (length(data_source) != 1) 
+  if (length(data_source) != 1) {
     stop("Only one data source is allowed...", call. = FALSE)
+  }
   
   data_sources_db <- databaser::db_get(
     con, 
@@ -113,12 +113,10 @@ insert_vehicle_details <- function(con, df, verbose = FALSE) {
     pull()
   
   if (!data_source %in% data_sources_db) {
-    
     stop(
       "`data_source` is not in `vehicle_details_data_sources` table...", 
       call. = FALSE
     )
-    
   }
 
   # Check registrations
@@ -129,10 +127,12 @@ insert_vehicle_details <- function(con, df, verbose = FALSE) {
   ) %>% 
     stringr::str_squish()
   
-  registrations_db <- databaser::db_get(con, sql_select)[, ]
+  registrations_db <- databaser::db_get(con, sql_select) %>% 
+    pull()
   
-  if (any(unique(df$registration) %in% registrations_db)) 
+  if (any(unique(df$registration) %in% registrations_db)) {
     stop("`registrations` are already in database...", call. = FALSE)
+  }
   
   # Check variables
   variables_allowed <- allowed_vehicle_details_variables()
@@ -160,7 +160,7 @@ insert_vehicle_details <- function(con, df, verbose = FALSE) {
   if (verbose) message(threadr::str_date_formatted(), ": Inserting...")
   databaser::db_insert(con, "vehicle_details", df)
   
-  # No return
+  return(invisible(con))
   
 }
 
@@ -177,8 +177,10 @@ allowed_vehicle_captures_variables <- function() {
   
   c(
     "absolute_humidity", "acceleration", "air_temp", "atmospheric_pressure", 
-    "co", "co2", "hc", "nh3", "no", "no2", "nox", "so2", "rh", "speed", 
-    "vehicle_specific_power"
+    "co", "co2", "hc", "ir_hc", "ir_smoke", "nh3", "no", "no2", "nox", 
+    "percent_co2", "ratio_co_co2", "ratio_hc_co2", "ratio_nh3_co2", 
+    "ratio_no_co2", "ratio_no2_co2", "rh", "so2", "speed", "uv_hc", 
+    "uv_smoke", "uv_water", "valid_plume_points", "vehicle_specific_power"
   )
   
 }
@@ -230,23 +232,29 @@ allowed_vehicle_details_variables <- function() {
 #' 
 #' @param df Input data frame to insert into \code{`sessions`}. 
 #' 
-#' @return Invisible, a database insert. 
+#' @return Invisible \code{con}.
 #' 
 #' @export
 insert_sessions <- function(con, df) {
   
   # Check session
-  if (anyDuplicated(df$session) != 0) 
+  if (anyDuplicated(df$session) != 0) {
     stop("`session` is not unique....", call. = FALSE)
+  }
   
-  if (any(df$session %in% get_sessions(con))) 
+  if (any(df$session %in% get_sessions(con))) {
     stop("There are duplicated sessions...", call. = FALSE)
+  }
   
   # Check sites
-  if (!any(unique(df$site) %in% get_sites(con)))
+  if (!any(unique(df$site) %in% get_sites(con))) {
     stop("sites do not exist in `sites`...", call. = FALSE)
+  }
   
+  # Insert into database
   databaser::db_insert(con, "sessions", df)
+  
+  return(invisible(con))
   
 }
 

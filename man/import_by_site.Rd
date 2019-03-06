@@ -5,7 +5,8 @@
 \title{Function to import vehicle emissions data by site from a vehicle emissions
 database.}
 \usage{
-import_by_site(con, site = NA, parse_dates = TRUE, verbose = FALSE)
+import_by_site(con, site = NA, parse_dates = TRUE,
+  valid_only = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{con}{Database connection to a vehicle emissions database.}
@@ -14,6 +15,8 @@ import_by_site(con, site = NA, parse_dates = TRUE, verbose = FALSE)
 will be selected.}
 
 \item{parse_dates}{Should date variables be parsed?}
+
+\item{valid_only}{Should only valid data be returned?}
 
 \item{verbose}{Should the function give messages?}
 }
