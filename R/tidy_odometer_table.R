@@ -1,8 +1,8 @@
 #' Function to tidy the messy odometer data contained in joined vehicle data 
 #' files. 
 #' 
-#' @param df Input tibble/data frame, usaully from 
-#' -\code{\link{read_vehicle_details}}.
+#' @param df Input tibble/data frame, usually from 
+#' \code{\link{read_vehicle_details}}.
 #' 
 #' @param variables Number of variables in messy data.
 #' 

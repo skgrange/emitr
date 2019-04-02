@@ -127,11 +127,14 @@ insert_vehicle_details <- function(con, df, verbose = FALSE) {
   ) %>% 
     stringr::str_squish()
   
-  registrations_db <- databaser::db_get(con, sql_select) %>% 
-    pull()
+  df_registrations_db <- databaser::db_get(con, sql_select)
   
-  if (any(unique(df$registration) %in% registrations_db)) {
-    stop("`registrations` are already in database...", call. = FALSE)
+  if (nrow(df_registrations_db) != 0) {
+    
+    if (any(unique(df$registration) %in% pull(df_registrations_db))) {
+      stop("`registrations` are already in database...", call. = FALSE)
+    }
+    
   }
   
   # Check variables

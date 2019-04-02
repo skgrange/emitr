@@ -8,8 +8,8 @@ files.}
 tidy_odometer_table(df, variables = 3, groups = 5)
 }
 \arguments{
-\item{df}{Input tibble/data frame, usaully from 
--\code{\link{read_vehicle_details}}.}
+\item{df}{Input tibble/data frame, usually from 
+\code{\link{read_vehicle_details}}.}
 
 \item{variables}{Number of variables in messy data.}
 
