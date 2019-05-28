@@ -4,14 +4,16 @@
 \alias{import_vehicle_emissions}
 \title{Function to import emissions data from a vehicle emissions database.}
 \usage{
-import_vehicle_emissions(con, registration = NA, valid_only = FALSE,
-  verbose = FALSE)
+import_vehicle_emissions(con, registration = NA, data_source = NA,
+  valid_only = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{con}{Database connection to a vehicle emissions database.}
 
 \item{registration}{A vector of registrations to return. If not used, all
 registrations will be selected.}
+
+\item{data_source}{A vector of}
 
 \item{valid_only}{Should only valid data be returned?}
 

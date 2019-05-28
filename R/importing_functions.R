@@ -25,7 +25,7 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
   if (is.na(registration[1])) {
     
     sql_select <- stringr::str_c(
-      "SELECT data_source, 
+      "SELECT data_source AS vehicle_details_data_source, 
       registration,
       variable, 
       value 
@@ -38,7 +38,7 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
     registration <- make_sql_registration(registration)
     
     sql_select <- stringr::str_c(
-      "SELECT data_source, 
+      "SELECT data_source AS vehicle_details_data_source, 
       registration,
       variable, 
       value 
@@ -83,7 +83,7 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
       
       # Arrange some variables
       df <- df %>% 
-        select(data_source,
+        select(vehicle_details_data_source,
                registration, 
                dplyr::matches("\\bvin\\b"),
                dplyr::matches("\\bmake\\b"),
@@ -101,63 +101,51 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
       if (parse_dates) {
         
         if ("first_reg_date" %in% names(df)) {
-          
           df$first_reg_date <- lubridate::ymd(
             df$first_reg_date, 
             tz = "UTC", 
             quiet = TRUE
           )
-          
         }
         
         if ("manufactured_date" %in% names(df)) {
-          
           df$manufactured_date <- lubridate::ymd(
             df$manufactured_date, 
             tz = "UTC", 
             quiet = TRUE
           )
-          
         }
         
         if ("registration_date" %in% names(df)) {
-          
           df$registration_date <- lubridate::ymd(
             df$registration_date, 
             tz = "UTC", 
             quiet = TRUE
           )
-          
         }
         
         if ("setup_date" %in% names(df)) {
-          
           df$setup_date <- lubridate::ymd(
             df$setup_date, 
             tz = "UTC", 
             quiet = TRUE
           )
-          
         }
         
         if ("termination_date" %in% names(df)) {
-          
           df$termination_date <- lubridate::ymd(
             df$termination_date, 
             tz = "UTC", 
             quiet = TRUE
           )
-          
         }
         
         if ("visibility_date" %in% names(df)) {
-          
           df$visibility_date <- lubridate::ymd(
             df$visibility_date, 
             tz = "UTC", 
             quiet = TRUE
           )
-          
         }
         
       }
@@ -180,7 +168,9 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
 #' @param registration A vector of registrations to return. If not used, all
 #' registrations will be selected. 
 #' 
-#' @param valid_only Should only valid data be returned?  
+#' @param valid_only Should only valid data be returned? 
+#' 
+#' @param data_source A vector of vehicle captures data sources to return. 
 #' 
 #' @param spread Should the table be reshaped and made wider? 
 #' 
@@ -189,8 +179,9 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
 #' @return Tibble. 
 #' 
 #' @export
-import_vehicle_captures <- function(con, registration = NA, valid_only = FALSE,
-                                    spread = TRUE, verbose = FALSE) {
+import_vehicle_captures <- function(con, registration = NA, data_source = NA, 
+                                    valid_only = FALSE, spread = TRUE, 
+                                    verbose = FALSE) {
   
   # Check inputs
   databaser::db_wildcard_check(registration)
@@ -207,6 +198,26 @@ import_vehicle_captures <- function(con, registration = NA, valid_only = FALSE,
       sql_select, 
       " WHERE registration IN (", registration, ")"
     )
+    
+  }
+  
+  if (!is.na(data_source[1])) {
+    
+    # Collapse data source
+    data_source <-  stringr::str_c(data_source, collapse = ",")
+    
+    # And or where? 
+    if (!is.na(registration[1])) {
+      sql_select <- stringr::str_c(
+        sql_select, 
+        " AND data_source IN (", data_source, ")"
+      )
+    } else {
+      sql_select <- stringr::str_c(
+        sql_select, 
+        " WHERE data_source IN (", data_source, ")"
+      )
+    }
     
   }
   
@@ -275,9 +286,9 @@ spread_vehicle_captures_table <- function(df) {
   df <- df %>% 
     select(site,
            site_name,
-           vehicle_captures_data_source,
            session,
            instrument,
+           vehicle_captures_data_source,
            vehicle_details_data_source,
            field_campaign,
            site_met,
@@ -498,6 +509,8 @@ sample_registrations <- function(con, n = 1, sort = FALSE) {
 #' @param registration A vector of registrations to return. If not used, all
 #' registrations will be selected. 
 #' 
+#' @param data_source A vector of 
+#' 
 #' @param valid_only Should only valid data be returned?  
 #' 
 #' @param verbose Should the function give messages? 
@@ -505,8 +518,8 @@ sample_registrations <- function(con, n = 1, sort = FALSE) {
 #' @return Tibble. 
 #' 
 #' @export
-import_vehicle_emissions <- function(con, registration = NA, valid_only = FALSE,
-                                     verbose = FALSE) {
+import_vehicle_emissions <- function(con, registration = NA, data_source = NA, 
+                                     valid_only = FALSE, verbose = FALSE) {
   
   if (verbose) {
     message(threadr::date_message(), "Importing vehicle capture data...")
@@ -515,6 +528,7 @@ import_vehicle_emissions <- function(con, registration = NA, valid_only = FALSE,
   df_captures <- import_vehicle_captures(
     con, 
     registration = registration,
+    data_source = data_source,
     valid_only = valid_only,
     verbose = FALSE
   ) %>% 
@@ -532,7 +546,9 @@ import_vehicle_emissions <- function(con, registration = NA, valid_only = FALSE,
   
   # Join
   if (verbose) message(threadr::date_message(), "Joining data...")
-  df <- left_join(df_captures, df_details, by = c("registration", "data_source"))
+  df <- left_join(
+    df_captures, df_details, by = c("registration", "vehicle_details_data_source")
+  )
   
   # Final formatting
   df <- order_capture_and_details_variables(df)
@@ -545,11 +561,10 @@ import_vehicle_emissions <- function(con, registration = NA, valid_only = FALSE,
 order_capture_and_details_variables <- function(df) {
   
   if (nrow(df) != 0) {
-    
     df %>% 
       select(session,
              instrument,
-             data_source,
+             vehicle_details_data_source,
              field_campaign,
              site,
              site_name,
@@ -563,11 +578,8 @@ order_capture_and_details_variables <- function(df) {
              dplyr::matches("\\bbody\\b"),
              everything()) %>% 
       arrange(date)
-    
   } else {
-    
     df <- tibble()
-    
   }
   
   return(df)
@@ -643,7 +655,7 @@ import_distinct_registrations <- function(con, as.logical = FALSE) {
     # Back to df
     df <- df_c %>%
       dplyr::full_join(df_d, by= "registration") %>%
-      dplyr::mutate_if(is.logical, ~ifelse(is.na(.), FALSE, .)) %>% 
+      dplyr::mutate_if(is.logical, ~if_else(is.na(.), FALSE, .)) %>% 
       arrange(registration)
     
   }
@@ -713,7 +725,10 @@ import_vehicle_odometers <- function(con, registration = NA) {
   # Select statement
   sql_select <- "
     SELECT * 
-    FROM vehicle_odometers ORDER BY data_source, registration, date
+    FROM vehicle_odometers 
+    ORDER BY data_source, 
+    registration, 
+    date
   "
   
   # Add where clause if needed
