@@ -9,7 +9,8 @@ if (getRversion() >= "2.15.1") {
     "model_variant_name", "vin", "region", "site_met", "registration", 
     "field_campaign", "VDRDateTime", "mot_results_mot_test_odometer_value", 
     "row_number", "variable_clean", "test_number", "unit", "vdr_date_time",
-    "ambient_temperature", "sdm_temperature", "file_image"
+    "ambient_temperature", "sdm_temperature", "file_image",
+    "vehicle_captures_data_source", "vehicle_details_data_source"
   )
   
   # Squash the note

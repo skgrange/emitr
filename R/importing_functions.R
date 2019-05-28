@@ -229,7 +229,7 @@ import_vehicle_captures <- function(con, registration = NA, valid_only = FALSE,
     # A test for co2, it is also in `vehicle_details`
     df <- df %>% 
       mutate(date = threadr::parse_unix_time(date),
-             variable = ifelse(variable == "co2", "co2_capture", variable))
+             variable = if_else(variable == "co2", "co2_capture", variable))
     
     # Reshape
     if (spread) df <- spread_vehicle_captures_table(df)
@@ -244,18 +244,24 @@ import_vehicle_captures <- function(con, registration = NA, valid_only = FALSE,
 vehicle_captures_select_statement <- function() {
   
   # Default statement
-  "SELECT vehicle_captures.*,
-    sessions.site,
-    sites.site_name,
-    sessions.instrument,
-    sessions.vehicle_details_data_source AS data_source,
-    sessions.field_campaign,
-    sessions.site_met
-    FROM vehicle_captures
-    LEFT JOIN sessions
-    ON vehicle_captures.session = sessions.session
-    LEFT JOIN sites
-    ON sessions.site = sites.site"
+  "SELECT vehicle_captures.data_source AS vehicle_captures_data_source,
+   vehicle_captures.session,
+   vehicle_captures.date,
+   vehicle_captures.registration,
+   vehicle_captures.variable,
+   vehicle_captures.validity,
+   vehicle_captures.value,
+   sessions.site,
+   sites.site_name,
+   sessions.instrument,
+   sessions.vehicle_details_data_source,
+   sessions.field_campaign,
+   sessions.site_met
+   FROM vehicle_captures
+   LEFT JOIN sessions
+   ON vehicle_captures.session = sessions.session
+   LEFT JOIN sites
+   ON sessions.site = sites.site"
   
 }
 
@@ -269,9 +275,10 @@ spread_vehicle_captures_table <- function(df) {
   df <- df %>% 
     select(site,
            site_name,
+           vehicle_captures_data_source,
            session,
            instrument,
-           data_source,
+           vehicle_details_data_source,
            field_campaign,
            site_met,
            date,
