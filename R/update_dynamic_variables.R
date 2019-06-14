@@ -20,20 +20,6 @@ update_dynamic_variables <- function(con, verbose = FALSE) {
   if (verbose) message(threadr::date_message(), "Updating session counts...")
   update_session_counts(con)
   
-  if (verbose) message(threadr::date_message(), "Updating `row_counts` table...")
-  update_row_counts(con)
-  
   return(invisible(con))
   
-}
-
-
-# Pulled from smonitor
-update_row_counts <- function (con, estimate = FALSE) {
-  table <- databaser::db_list_tables(con)
-  table <- setdiff(table, "row_counts")
-  df <- databaser::db_count_rows(con, table = table, estimate = estimate)
-  databaser::db_insert(con, "row_counts", df, replace = TRUE)
-  df <- databaser::db_read_table(con, "row_counts")
-  return(invisible(df))
 }
