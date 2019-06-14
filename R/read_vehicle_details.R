@@ -42,9 +42,13 @@ read_vehicle_details_worker <- function(file, verbose) {
       vehicle_fuel_code = readr::col_integer(), 
       vehicle_export_date = readr::col_character(),
       vehicle_scrapped_date = readr::col_character(),
-      vehicle_import_date = readr::col_character()
+      vehicle_import_date = readr::col_character(),
+      keeper_vic_date = readr::col_character(),
+      vehicle_vin_ending = readr::col_character(),
+      mvris_vehicle_series = readr::col_character()
     ),
-    progress = FALSE
+    progress = FALSE,
+    guess_max = 10000
   )
   
   # Catch some NAs
