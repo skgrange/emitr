@@ -95,57 +95,34 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
                dplyr::matches("vehicle_desc"),
                dplyr::matches("cc"),
                dplyr::matches("fuel_delivery"),
+               dplyr::matches("manufactured_date"), 
                everything())
       
       # Correct data types
       if (parse_dates) {
         
         if ("first_reg_date" %in% names(df)) {
-          df$first_reg_date <- lubridate::ymd(
-            df$first_reg_date, 
-            tz = "UTC", 
-            quiet = TRUE
-          )
+          df$first_reg_date <- parse_details_dates(df$first_reg_date)
         }
         
         if ("manufactured_date" %in% names(df)) {
-          df$manufactured_date <- lubridate::ymd(
-            df$manufactured_date, 
-            tz = "UTC", 
-            quiet = TRUE
-          )
+          df$manufactured_date <- parse_details_dates(df$manufactured_date)
         }
         
         if ("registration_date" %in% names(df)) {
-          df$registration_date <- lubridate::ymd(
-            df$registration_date, 
-            tz = "UTC", 
-            quiet = TRUE
-          )
+          df$registration_date <- parse_details_dates(df$registration_date)
         }
         
         if ("setup_date" %in% names(df)) {
-          df$setup_date <- lubridate::ymd(
-            df$setup_date, 
-            tz = "UTC", 
-            quiet = TRUE
-          )
+          df$setup_date <- parse_details_dates(df$setup_date)
         }
         
         if ("termination_date" %in% names(df)) {
-          df$termination_date <- lubridate::ymd(
-            df$termination_date, 
-            tz = "UTC", 
-            quiet = TRUE
-          )
+          df$termination_date <- parse_details_dates(df$termination_date)
         }
         
         if ("visibility_date" %in% names(df)) {
-          df$visibility_date <- lubridate::ymd(
-            df$visibility_date, 
-            tz = "UTC", 
-            quiet = TRUE
-          )
+          df$visibility_date <- parse_details_dates(df$visibility_date)
         }
         
       }
@@ -155,6 +132,18 @@ import_vehicle_details <- function(con, registration = NA, spread = TRUE,
   }
   
   return(df)
+  
+}
+
+
+parse_details_dates <- function(x) {
+  
+  lubridate::ymd_hms(
+    x,
+    tz = "UTC", 
+    quiet = TRUE,
+    truncated = 3
+  )
   
 }
 
@@ -812,7 +801,12 @@ import_by_session <- function(con, session = NA, parse_dates = TRUE,
   
   # Join
   if (verbose) message(threadr::date_message(), "Joining data...")
-  df <- left_join(df_captures, df_details, by = c("data_source", "registration"))
+  
+  df <- left_join(
+    df_captures, 
+    df_details, 
+    by = c("vehicle_details_data_source", "registration")
+  )
   
   # Final formatting
   df <- order_capture_and_details_variables(df)
